@@ -14,17 +14,17 @@ from .logg import Logg
 
 class Base(SQLModel, table=False):  # type: ignore
     id: str | None = Field(default=None, primary_key=True)
-    createDate: datetime | None = None
-    createObjectId: str | None = None
-    updateDate: datetime | None = None
-    updateObjectId: str | None = None
+    create_date: datetime | None = None
+    create_object_id: str | None = None
+    update_date: datetime | None = None
+    update_object_id: str | None = None
 
     def add_or_update(self, objectId: str):
-        setattr(self, "updateDate", datetime.now())
-        setattr(self, "updateObjectId", objectId)
-        if self.createDate is None:
-            setattr(self, "createDate", datetime.now())
-            setattr(self, "createObjectId", objectId)
+        setattr(self, "update_date", datetime.now())
+        setattr(self, "update_object_id", objectId)
+        if self.create_date is None:
+            setattr(self, "create_date", datetime.now())
+            setattr(self, "create_object_id", objectId)
         if self.id is None:
             setattr(self, "id", str(uuid4()))
 
