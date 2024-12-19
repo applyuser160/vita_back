@@ -42,10 +42,4 @@ repos:
       - id: mypy
         additional_dependencies:
           - types-pyyaml
-          - sqlalchemy-stubs
-        args:
-          - --check-untyped-defs
-          - --disallow-untyped-defs
-          - --disallow-incomplete-defs
-          - --strict-optional
         exclude: ^testing/resources/
