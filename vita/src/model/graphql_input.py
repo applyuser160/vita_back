@@ -11,11 +11,10 @@ from model.model import (
     StatusEnum,
     SubAccount,
 )
-from strawberry.experimental.pydantic.conversion_types import StrawberryTypeFromPydantic
 
 
 @strawberry.experimental.pydantic.input(model=Account, all_fields=True)
-class AccountGraphqlInput(StrawberryTypeFromPydantic):
+class AccountGraphqlInput:
     pass
 
 
