@@ -1,13 +1,11 @@
 import strawberry
 from model.graphql_input import (
     AccountGraphqlInput,
-    InnerJournalEntryGraphqlInput,
     JournalEntryGraphqlInput,
     SubAccountGraphqlInput,
 )
 from model.graphql_type import (
     AccountGraphqlType,
-    InnerJournalEntryGraphqlType,
     JournalEntryGraphqlType,
     SubAccountGraphqlType,
 )

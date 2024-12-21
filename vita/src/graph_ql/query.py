@@ -10,7 +10,6 @@ from model.graphql_type import (
     JournalEntryGraphqlType,
     SubAccountGraphqlType,
 )
-from model.model import Account
 from util.err import VitaError
 
 

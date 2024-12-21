@@ -2,7 +2,6 @@ from datetime import date
 from enum import IntEnum
 
 import strawberry
-from pydantic import StringConstraints
 from sqlmodel import Field
 from util.sql_model import Base
 

@@ -1,6 +1,5 @@
 from datetime import date
 
-import pydantic
 import strawberry
 from model.model import (
     Account,
