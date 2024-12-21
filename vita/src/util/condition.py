@@ -3,8 +3,6 @@ from __future__ import annotations
 from enum import Enum
 from typing import Any
 
-from sqlmodel import and_, or_
-
 
 class ConditionType(Enum):
     EQUAL = 0
@@ -51,18 +49,5 @@ class Condition:
             result = self.target.contains(self.value)
         else:
             result = self.target.like(f"%{self.value}%")
-        if self.isnot:
-            result = not result
-        return result
 
-
-class ConditionGroup:
-    condition1: Condition
-    condition2: Condition | None = None
-    relation: ConditionRelationType | None = None
-
-    def to_sqlalchemy(self):
-        if self.relation == ConditionRelationType.AND:
-            return and_(self.condition1.to_sqlachemy(), self.condition2.to_sqlachemy())
-        else:
-            return or_(self.condition1.to_sqlachemy(), self.condition2.to_sqlachemy())
+        return not result if self.isnot else result

@@ -5,6 +5,7 @@ from typing import Any, Self
 from uuid import uuid4
 
 from sqlalchemy.engine import URL
+from sqlalchemy.orm import Query
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 
 from .condition import Condition, ConditionType
@@ -90,7 +91,7 @@ class MysqlSession:
 
     def _append_where(
         self,
-        query,
+        query: Query,
         modelType: type,
         cond: Base | None,
         type: ConditionType,
