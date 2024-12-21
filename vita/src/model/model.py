@@ -12,7 +12,7 @@ class BsPlEnum(IntEnum):
     pass  # TODO: 内容記載
 
 
-class CreditDevitEnum(IntEnum):
+class CreditDebitEnum(IntEnum):
     pass  # TODO: 内容記載
 
 
@@ -26,7 +26,7 @@ class Account(Base, table=True):  # type: ignore
     description: str
     dept: DeptEnum
     bs_pl: BsPlEnum
-    credit_debit: CreditDevitEnum
+    credit_debit: CreditDebitEnum
 
 
 class SubAccount(Base, table=True):  # type: ignore
@@ -42,7 +42,7 @@ class InnerJournalEntry(Base, table=True):  # type: ignore
     account_id: str
     sub_account_id: str
     amount: int
-    credit_debit: CreditDevitEnum
+    credit_debit: CreditDebitEnum
     index: int
 
 
