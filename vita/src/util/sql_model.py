@@ -1,12 +1,14 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Self
+from typing import Any, Literal, Self
 from uuid import uuid4
 
+from pydantic import ValidationError
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Query
 from sqlmodel import Field, Session, SQLModel, create_engine, select
+from util.err import VitaError
 
 from .condition import Condition, ConditionType
 from .env import get
@@ -14,6 +16,7 @@ from .logg import Logg
 
 
 class Base(SQLModel, table=False):  # type: ignore
+    __table_args__ = {"extend_existing": True}
     id: str | None = Field(default=None, primary_key=True)
     create_date: datetime | None = None
     create_object_id: str | None = None
@@ -32,8 +35,8 @@ class Base(SQLModel, table=False):  # type: ignore
             setattr(self, "id", str(uuid4()))
 
     def logical_delete(self, object_id: str):
-        setattr(self, "update_date", datetime.now())
-        setattr(self, "update_object_id", object_id)
+        setattr(self, "delete_date", datetime.now())
+        setattr(self, "delete_object_id", object_id)
 
     def copy_only_id(self):
         return Base(id=self.id)
@@ -66,28 +69,35 @@ class Base(SQLModel, table=False):  # type: ignore
                 return False
         return True
 
+    def validate(self):
+        self.model_validate(self)
+
     @staticmethod
     def is_none(obj: Any):
         return obj is None
 
 
-class MysqlSession:
+class SQLSession:
     session: Session
     logg: Logg
 
-    def __init__(self, logg: Logg):
-        uri = get("MYSQL_URI")
-        user = get("MYSQL_USER")
-        pin = get("MYSQL_PASSWORD")
-        database = get("MYSQL_DATABASE")
-        url = URL.create(
-            drivername="mysql+mysqldb",
-            username=user,
-            password=pin,
-            host=uri,
-            database=database,
-            query={"charset": "utf8mb4", "ssl": "true"},
-        )
+    def __init__(self, logg: Logg, db_type: Literal["mysql", "sqlite"] = "mysql"):
+        if db_type == "mysql":
+            uri = get("MYSQL_URI")
+            user = get("MYSQL_USER")
+            pin = get("MYSQL_PASSWORD")
+            database = get("MYSQL_DATABASE")
+            url = URL.create(
+                drivername="mysql+mysqldb",
+                username=user,
+                password=pin,
+                host=uri,
+                database=database,
+                query={"charset": "utf8mb4", "ssl": "true"},
+            )
+        else:
+            url = "sqlite:///vita.db"
+
         engine = create_engine(url=url)
         self.session = Session(engine)
         self.logg = logg
@@ -193,6 +203,11 @@ class MysqlSession:
 
     def save(self, model_type: type, model: Base, object_id: str):
         self.logg.info("save sql", {"type": model_type.__name__})
+        try:
+            model.validate()
+        except ValidationError as e:
+            self.logg.error("validation error", {"message": str(e)})
+            raise VitaError(400, str(e))
         return self._save_base(model_type, model, object_id)
 
     def bulk_save(self, models: list[Base], object_id: str):

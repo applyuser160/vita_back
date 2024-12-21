@@ -2,7 +2,7 @@ import strawberry
 
 
 @strawberry.type
-class VitaError:
+class VitaError(Exception):
 
     error_code: int
     message: str

@@ -1,5 +1,15 @@
 import strawberry
-from model.graphql_type import AccountGraphqlType
+from model.graphql_input import (
+    AccountsGraphqlInput,
+    JournalEntriesGraphqlInput,
+    SingleGraphqlInput,
+    SubAccountsGraphqlInput,
+)
+from model.graphql_type import (
+    AccountGraphqlType,
+    JournalEntryGraphqlType,
+    SubAccountGraphqlType,
+)
 from model.model import Account
 from util.err import VitaError
 
@@ -8,8 +18,35 @@ from util.err import VitaError
 class Query:
 
     @strawberry.field
-    def account(self) -> AccountGraphqlType | VitaError:
-        account = Account()
-        if account:
-            return AccountGraphqlType.from_pydantic(account)
-        return VitaError(1, "error")
+    def account(self, input: SingleGraphqlInput) -> AccountGraphqlType | VitaError:
+        pass
+
+    @strawberry.field
+    def accounts(
+        self, input: AccountsGraphqlInput
+    ) -> list[AccountGraphqlType] | VitaError:
+        pass
+
+    @strawberry.field
+    def sub_account(
+        self, input: SingleGraphqlInput
+    ) -> SubAccountGraphqlType | VitaError:
+        pass
+
+    @strawberry.field
+    def sub_accounts(
+        self, input: SubAccountsGraphqlInput
+    ) -> list[SubAccountGraphqlType] | VitaError:
+        pass
+
+    @strawberry.field
+    def journal_entry(
+        self, input: SingleGraphqlInput
+    ) -> JournalEntryGraphqlType | VitaError:
+        pass
+
+    @strawberry.field
+    def journal_entries(
+        self, input: JournalEntriesGraphqlInput
+    ) -> list[JournalEntryGraphqlType] | VitaError:
+        pass

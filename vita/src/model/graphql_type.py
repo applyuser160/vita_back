@@ -17,6 +17,17 @@ class InnerJournalEntryGraphqlType:
     pass
 
 
-@strawberry.experimental.pydantic.type(model=JournalEntry, all_fields=True)
+@strawberry.experimental.pydantic.type(model=JournalEntry)
 class JournalEntryGraphqlType:
-    pass
+    id: strawberry.auto
+    name: strawberry.auto
+    description: strawberry.auto
+    date: strawberry.auto
+    status: strawberry.auto
+    create_date: strawberry.auto
+    create_object_id: strawberry.auto
+    update_date: strawberry.auto
+    update_object_id: strawberry.auto
+    delete_date: strawberry.auto
+    delete_object_id: strawberry.auto
+    inner_journal_entries: list[InnerJournalEntryGraphqlType]
