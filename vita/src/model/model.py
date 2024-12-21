@@ -5,18 +5,22 @@ from util.sql_model import Base
 
 
 class DeptEnum(IntEnum):
+    sample = 1
     pass  # TODO: 内容記載
 
 
 class BsPlEnum(IntEnum):
+    sample = 1
     pass  # TODO: 内容記載
 
 
 class CreditDebitEnum(IntEnum):
+    sample = 1
     pass  # TODO: 内容記載
 
 
 class StatusEnum(IntEnum):
+    sample = 1
     pass  # TODO: 内容記載
 
 
