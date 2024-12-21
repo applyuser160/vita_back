@@ -1,7 +1,7 @@
 from datetime import date
 from enum import IntEnum
 
-from src.util.sql_model import Base
+from vita.src.util.sql_model import Base
 
 
 class DeptEnum(IntEnum):
