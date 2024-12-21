@@ -2,10 +2,9 @@ import strawberry
 import uvicorn
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from graph_ql.mutation import Mutation
+from graph_ql.query import Query
 from strawberry.fastapi import GraphQLRouter
-
-from vita.src.graphql.mutation import Mutation
-from vita.src.graphql.query import Query
 
 schema = strawberry.Schema(query=Query, mutation=Mutation, subscription=None)
 

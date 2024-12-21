@@ -16,7 +16,7 @@ mysqlclient = "^2.2.6"
 pymysql = "^1.1.1"
 fastapi = "^0.115.6"
 uvicorn = "^0.34.0"
-strawberry-graphql = "^0.254.0"
+strawberry-graphql = "^0.255.0"
 flake8 = "^7.1.1"
 black = "^24.10.0"
 isort = "^5.13.2"
@@ -28,4 +28,7 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
-pythonpath = ["tests"]
+pythonpath = "src"
+
+[tool.mypy]
+plugins = ["strawberry.ext.mypy_plugin"]
