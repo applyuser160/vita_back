@@ -20,12 +20,12 @@ from .logg import Logg
 class Base(SQLModel, table=False):  # type: ignore
     __table_args__ = {"extend_existing": True}
     id: str | None = Field(default=None, primary_key=True)
-    create_date: datetime | None = None
-    create_object_id: str | None = None
-    update_date: datetime | None = None
-    update_object_id: str | None = None
-    delete_date: datetime | None = None
-    delete_object_id: datetime | None = None
+    create_date: datetime | None = Field(default=None)
+    create_object_id: str | None = Field(default=None)
+    update_date: datetime | None = Field(default=None)
+    update_object_id: str | None = Field(default=None)
+    delete_date: datetime | None = Field(default=None, nullable=True)
+    delete_object_id: str | None = Field(default=None, nullable=True)
 
     def add_or_update(self, object_id: str):
         setattr(self, "update_date", VitaDatetime.now())
@@ -246,4 +246,18 @@ class SQLSession:
     def logical_delete(self, model_type: type, model: Base, object_id: str):
         self.logg.info("logical delete sql", {"type": model_type.__name__})
         model.logical_delete(object_id)
-        self._save_base(model_type, model, object_id)
+        try:
+            model.validate()
+        except ValidationError as e:
+            e_dicts = json.loads(e.json())
+            messages: list[dict] = []
+            for e_dict in e_dicts:
+                message = {
+                    "type": e_dict["type"],
+                    "message": e_dict["msg"],
+                    "location": e_dict["loc"],
+                }
+                messages.append(message)
+                self.logg.error("validation error", message)
+            raise VitaError(400, json.dumps(messages))
+        return self._save_base(model_type, model, object_id)
