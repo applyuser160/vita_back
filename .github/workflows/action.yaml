@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master, develop, 'feature/*' ]
 
+env:
+  LOG_LEVEL: INFO
+
 jobs:
   test:
     defaults:

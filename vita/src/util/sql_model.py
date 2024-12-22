@@ -1,12 +1,16 @@
 from __future__ import annotations
 
 from datetime import datetime
-from typing import Any, Self
+import json
+from typing import Any, Literal, Self
 from uuid import uuid4
 
+from pydantic import ValidationError
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Query
 from sqlmodel import Field, Session, SQLModel, create_engine, select
+from util.err import VitaError
+from util.dt import VitaDatetime
 
 from .condition import Condition, ConditionType
 from .env import get
@@ -14,26 +18,27 @@ from .logg import Logg
 
 
 class Base(SQLModel, table=False):  # type: ignore
+    __table_args__ = {"extend_existing": True}
     id: str | None = Field(default=None, primary_key=True)
-    create_date: datetime | None = None
-    create_object_id: str | None = None
-    update_date: datetime | None = None
-    update_object_id: str | None = None
-    delete_date: datetime | None = None
-    delete_object_id: datetime | None = None
+    create_date: datetime | None = Field(default=None)
+    create_object_id: str | None = Field(default=None)
+    update_date: datetime | None = Field(default=None)
+    update_object_id: str | None = Field(default=None)
+    delete_date: datetime | None = Field(default=None, nullable=True)
+    delete_object_id: str | None = Field(default=None, nullable=True)
 
     def add_or_update(self, object_id: str):
-        setattr(self, "update_date", datetime.now())
+        setattr(self, "update_date", VitaDatetime.now())
         setattr(self, "update_object_id", object_id)
         if self.create_date is None:
-            setattr(self, "create_date", datetime.now())
+            setattr(self, "create_date", VitaDatetime.now())
             setattr(self, "create_object_id", object_id)
         if self.id is None:
             setattr(self, "id", str(uuid4()))
 
     def logical_delete(self, object_id: str):
-        setattr(self, "update_date", datetime.now())
-        setattr(self, "update_object_id", object_id)
+        setattr(self, "delete_date", VitaDatetime.now())
+        setattr(self, "delete_object_id", object_id)
 
     def copy_only_id(self):
         return Base(id=self.id)
@@ -66,28 +71,35 @@ class Base(SQLModel, table=False):  # type: ignore
                 return False
         return True
 
+    def validate(self):
+        self.model_validate(self)
+
     @staticmethod
     def is_none(obj: Any):
         return obj is None
 
 
-class MysqlSession:
+class SQLSession:
     session: Session
     logg: Logg
 
-    def __init__(self, logg: Logg):
-        uri = get("MYSQL_URI")
-        user = get("MYSQL_USER")
-        pin = get("MYSQL_PASSWORD")
-        database = get("MYSQL_DATABASE")
-        url = URL.create(
-            drivername="mysql+mysqldb",
-            username=user,
-            password=pin,
-            host=uri,
-            database=database,
-            query={"charset": "utf8mb4", "ssl": "true"},
-        )
+    def __init__(self, logg: Logg, db_type: Literal["mysql", "sqlite"] = "mysql"):
+        if db_type == "mysql":
+            uri = get("MYSQL_URI")
+            user = get("MYSQL_USER")
+            pin = get("MYSQL_PASSWORD")
+            database = get("MYSQL_DATABASE")
+            url = URL.create(
+                drivername="mysql+mysqldb",
+                username=user,
+                password=pin,
+                host=uri,
+                database=database,
+                query={"charset": "utf8mb4", "ssl": "true"},
+            )
+        else:
+            url = "sqlite:///vita.db"
+
         engine = create_engine(url=url)
         self.session = Session(engine)
         self.logg = logg
@@ -193,6 +205,20 @@ class MysqlSession:
 
     def save(self, model_type: type, model: Base, object_id: str):
         self.logg.info("save sql", {"type": model_type.__name__})
+        try:
+            model.validate()
+        except ValidationError as e:
+            e_dicts = json.loads(e.json())
+            messages: list[dict] = []
+            for e_dict in e_dicts:
+                message = {
+                    "type": e_dict["type"],
+                    "message": e_dict["msg"],
+                    "location": e_dict["loc"],
+                }
+                messages.append(message)
+                self.logg.error("validation error", message)
+            raise VitaError(400, json.dumps(messages))
         return self._save_base(model_type, model, object_id)
 
     def bulk_save(self, models: list[Base], object_id: str):
@@ -220,4 +246,18 @@ class MysqlSession:
     def logical_delete(self, model_type: type, model: Base, object_id: str):
         self.logg.info("logical delete sql", {"type": model_type.__name__})
         model.logical_delete(object_id)
-        self._save_base(model_type, model, object_id)
+        try:
+            model.validate()
+        except ValidationError as e:
+            e_dicts = json.loads(e.json())
+            messages: list[dict] = []
+            for e_dict in e_dicts:
+                message = {
+                    "type": e_dict["type"],
+                    "message": e_dict["msg"],
+                    "location": e_dict["loc"],
+                }
+                messages.append(message)
+                self.logg.error("validation error", message)
+            raise VitaError(400, json.dumps(messages))
+        return self._save_base(model_type, model, object_id)
