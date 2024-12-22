@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+import json
 from typing import Any, Literal, Self
 from uuid import uuid4
 
@@ -206,8 +207,17 @@ class SQLSession:
         try:
             model.validate()
         except ValidationError as e:
-            self.logg.error("validation error", {"message": str(e)})
-            raise VitaError(400, str(e))
+            e_dicts = json.loads(e.json())
+            messages: list[dict] = []
+            for e_dict in e_dicts:
+                message = {
+                    "type": e_dict["type"],
+                    "message": e_dict["msg"],
+                    "location": e_dict["loc"],
+                }
+                messages.append(message)
+                self.logg.error("validation error", message)
+            raise VitaError(400, json.dumps(messages))
         return self._save_base(model_type, model, object_id)
 
     def bulk_save(self, models: list[Base], object_id: str):
