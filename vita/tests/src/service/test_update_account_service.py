@@ -1,4 +1,6 @@
+from datetime import datetime
 import json
+from unittest.mock import Mock, patch
 from vita.src.model.graphql_input import AccountGraphqlInput
 from vita.src.model.model import Account, BsPlEnum, CreditDebitEnum, DeptEnum
 from vita.src.service.update_account_service import UpdateAccountService
@@ -137,3 +139,51 @@ def test_update_account_service_case04(session: SQLSession):
     assert message_dict["type"] == "enum"
     assert message_dict["message"] == "Input should be 1 or 2"
     assert message_dict["location"] == ["credit_debit"]
+
+
+@patch("util.dt.VitaDatetime.now")
+def test_update_account_service_case05(now: Mock, session: SQLSession):
+    """
+    テスト観点:
+    正常系
+    """
+
+    now.return_value = datetime(2024, 1, 1, 9, 0, 0, 0)
+
+    account = Account(
+        name="name",
+        description="des",
+        dept=DeptEnum.CURRENT_ASSETS,
+        bs_pl=BsPlEnum.BS,
+        credit_debit=CreditDebitEnum.DEBIT,
+    )
+    account: Account = session.save(Account, account, "system")
+
+    account.name = "new name"
+    account.description = "new description"
+    account.dept = DeptEnum.DEFERRED_ASSETS
+    account.bs_pl = BsPlEnum.PL
+    account.credit_debit = CreditDebitEnum.CREDIT
+    input = AccountGraphqlInput.from_pydantic(account)
+
+    service = UpdateAccountService(session)
+    result = service.execute(input)
+    account: Account = result.to_pydantic()
+
+    assert account.id
+    assert account.name == "new name"
+    assert account.description
+    assert account.description == "new description"
+    assert account.dept == DeptEnum.DEFERRED_ASSETS
+    assert account.bs_pl == BsPlEnum.PL
+    assert account.credit_debit == CreditDebitEnum.CREDIT
+    assert account.create_date
+    assert account.create_date == datetime(2024, 1, 1, 9, 0, 0, 0)
+    assert account.create_object_id
+    assert account.create_object_id == "system"
+    assert account.update_date
+    assert account.create_date == datetime(2024, 1, 1, 9, 0, 0, 0)
+    assert account.update_object_id
+    assert account.update_object_id == "system"
+    assert not account.delete_date
+    assert not account.delete_object_id

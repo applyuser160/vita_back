@@ -10,6 +10,7 @@ from sqlalchemy.engine import URL
 from sqlalchemy.orm import Query
 from sqlmodel import Field, Session, SQLModel, create_engine, select
 from util.err import VitaError
+from util.dt import VitaDatetime
 
 from .condition import Condition, ConditionType
 from .env import get
@@ -27,16 +28,16 @@ class Base(SQLModel, table=False):  # type: ignore
     delete_object_id: datetime | None = None
 
     def add_or_update(self, object_id: str):
-        setattr(self, "update_date", datetime.now())
+        setattr(self, "update_date", VitaDatetime.now())
         setattr(self, "update_object_id", object_id)
         if self.create_date is None:
-            setattr(self, "create_date", datetime.now())
+            setattr(self, "create_date", VitaDatetime.now())
             setattr(self, "create_object_id", object_id)
         if self.id is None:
             setattr(self, "id", str(uuid4()))
 
     def logical_delete(self, object_id: str):
-        setattr(self, "delete_date", datetime.now())
+        setattr(self, "delete_date", VitaDatetime.now())
         setattr(self, "delete_object_id", object_id)
 
     def copy_only_id(self):
