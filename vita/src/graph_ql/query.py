@@ -11,10 +11,15 @@ from model.graphql_type import (
     SubAccountGraphqlType,
 )
 from util.err import VitaError
+from util.logg import Logg
+from util.sql_model import SQLSession
 
 
 @strawberry.type
 class Query:
+
+    def get_session(self):
+        return SQLSession(Logg())
 
     @strawberry.field
     def account(self, input: SingleGraphqlInput) -> AccountGraphqlType | VitaError:
