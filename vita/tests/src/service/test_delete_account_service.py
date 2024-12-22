@@ -1,5 +1,7 @@
 from datetime import datetime
 from unittest.mock import Mock, patch
+
+from sqlmodel import select
 from vita.src.model.graphql_input import AccountGraphqlInput
 from vita.src.model.model import Account, BsPlEnum, CreditDebitEnum, DeptEnum
 from vita.src.service.delete_account_service import DeleteAccountService
@@ -22,14 +24,14 @@ def test_delete_account_service_case01(now: Mock, session: SQLSession):
         bs_pl=BsPlEnum.BS,
         credit_debit=CreditDebitEnum.DEBIT,
     )
-    account: Account = session.save(Account, account, "system")
+    account = session.save(Account, account, "system")
 
     input = AccountGraphqlInput.from_pydantic(account)
 
     service = DeleteAccountService(session)
     result = service.execute(input)
 
-    account: Account = result.to_pydantic()
+    account = result.to_pydantic()
 
     assert account.id
     assert account.name == "name"
@@ -49,3 +51,20 @@ def test_delete_account_service_case01(now: Mock, session: SQLSession):
     assert account.delete_date
     assert account.delete_date == datetime(2024, 1, 1, 9, 0, 0, 0)
     assert account.delete_object_id
+
+    record: Account = session.execute(
+        select(Account).where(Account.id == account.id), Account, True
+    )
+    assert record
+    assert account.id == record.id
+    assert account.name == record.name
+    assert account.description == record.description
+    assert account.dept == record.dept
+    assert account.bs_pl == record.bs_pl
+    assert account.credit_debit == record.credit_debit
+    assert account.create_date == record.create_date
+    assert account.create_object_id == record.create_object_id
+    assert account.update_date == record.update_date
+    assert account.update_object_id == record.update_object_id
+    assert account.delete_date == record.delete_date
+    assert account.delete_object_id == record.delete_object_id

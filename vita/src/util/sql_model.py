@@ -197,7 +197,7 @@ class SQLSession:
             entity.add_or_update(object_id)
             entity.copy_poperty(model, model.extract_valid_value().keys())
             self.session.add(entity)
-            self.session.expire_on_commit = False
+            self.session.expire_on_commit = True
             self.session.commit()
             return entity
         except Exception as e:

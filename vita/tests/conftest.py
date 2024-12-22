@@ -8,5 +8,6 @@ from vita.src.util.sql_model import SQLSession
 @pytest.fixture
 def session() -> SQLSession:
     session = SQLSession(Logg(), "sqlite")
+    SQLModel.metadata.drop_all(session.session.bind)
     SQLModel.metadata.create_all(session.session.bind)
     return session
