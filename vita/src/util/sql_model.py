@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from datetime import datetime
 import json
+import logging
 from typing import Any, Literal, Self
 from uuid import uuid4
 
@@ -98,10 +99,10 @@ class SQLSession:
                 query={"charset": "utf8mb4", "ssl": "true"},
             )
         else:
-            url = "sqlite:///vita.db"
+            url = "sqlite:///:memory:"
 
-        engine = create_engine(url=url)
-        self.session = Session(engine)
+        engine = create_engine(url=url, echo=logg.logger.level <= logging.DEBUG)
+        self.session = Session(engine, autoflush=False)
         self.logg = logg
 
     def close(self):
@@ -197,7 +198,6 @@ class SQLSession:
             entity.add_or_update(object_id)
             entity.copy_poperty(model, model.extract_valid_value().keys())
             self.session.add(entity)
-            self.session.expire_on_commit = True
             self.session.commit()
             return entity
         except Exception as e:
