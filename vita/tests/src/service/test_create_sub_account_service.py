@@ -1,6 +1,8 @@
 from datetime import datetime
 import json
 from unittest.mock import Mock, patch
+
+from sqlmodel import select
 from vita.src.model.graphql_input import SubAccountGraphqlInput
 from vita.src.model.graphql_type import SubAccountGraphqlType
 from vita.src.model.model import SubAccount
@@ -118,3 +120,17 @@ def test_create_account_service_case05(now: Mock, session: SQLSession):
     assert sub_account.update_object_id == "system"
     assert not sub_account.delete_date
     assert not sub_account.delete_object_id
+
+    record = session.execute(
+        select(SubAccount).where(SubAccount.id == sub_account.id), SubAccount, True
+    )
+    assert record
+    assert sub_account.id == record.id
+    assert sub_account.name == record.name
+    assert sub_account.description == record.description
+    assert sub_account.create_date == record.create_date
+    assert sub_account.create_object_id == record.create_object_id
+    assert sub_account.update_date == record.update_date
+    assert sub_account.update_object_id == record.update_object_id
+    assert sub_account.delete_date == record.delete_date
+    assert sub_account.delete_object_id == record.delete_object_id
