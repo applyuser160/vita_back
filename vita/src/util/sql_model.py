@@ -3,7 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 import json
 import logging
-from typing import Any, Literal, Self
+from typing import Literal, Self, TypeVar
 from uuid import uuid4
 
 from pydantic import ValidationError
@@ -75,9 +75,8 @@ class Base(SQLModel, table=False):  # type: ignore
     def validate(self):
         self.model_validate(self)
 
-    @staticmethod
-    def is_none(obj: Any):
-        return obj is None
+
+T = TypeVar("T", bound=Base)
 
 
 class SQLSession:
@@ -111,10 +110,10 @@ class SQLSession:
     def _append_where(
         self,
         query: Query,
-        model_type: type,
-        cond: Base | None,
+        model_type: type[T],
+        cond: T | None,
         type: ConditionType,
-    ):
+    ) -> Query:
         if not cond:
             return query
 
@@ -125,7 +124,9 @@ class SQLSession:
                 query = query.where(condition.to_sqlachemy())
         return query
 
-    def _exec_query(self, query, model_type: type, isOne: bool):
+    def _exec_query(
+        self, query: Query, model_type: type[T], isOne: bool
+    ) -> list[T] | T | None:
         self.logg.info(
             "execute query.",
             {
@@ -136,10 +137,10 @@ class SQLSession:
         try:
             if isOne:
                 result = self.session.exec(query).first()
-                if Base.is_none(result):
-                    return model_type()
-                if result.is_empty():
-                    return model_type()
+                if result is None:
+                    return None
+                elif result.is_empty():
+                    return None
                 else:
                     return result
             else:
@@ -150,27 +151,30 @@ class SQLSession:
                     return result
         except Exception as e:
             self.logg.error("execute query error", {"message": str(e)})
+            return None
 
-    def execute(self, query, model_type: type, isOne: bool):
+    def execute(
+        self, query: Query, model_type: type[T], isOne: bool
+    ) -> list[T] | T | None:
         self.logg.info("execute sql", {"type": model_type.__name__})
         return self._exec_query(query, model_type, isOne)
 
     def _find_base(
         self,
-        model_type: type,
-        cond: Base | None = None,
+        model_type: type[T],
+        cond: T | None = None,
         isOne: bool = True,
-    ):
+    ) -> list[T] | T | None:
         query = select(model_type)
         query = self._append_where(query, model_type, cond, ConditionType.EQUAL)
         return self._exec_query(query, model_type, isOne)
 
     def find(
         self,
-        model_type: type,
-        conds: dict[ConditionType, Base] | None = None,
+        model_type: type[T],
+        conds: dict[ConditionType, T] | None = None,
         isOne: bool = True,
-    ):
+    ) -> list[T] | T | None:
         self.logg.info("find sql", {"type": model_type.__name__})
         query = select(model_type)
         if conds is not None:
@@ -180,21 +184,19 @@ class SQLSession:
 
     def _save_base(
         self,
-        model_type: type,
-        model: Base,
+        model_type: type[T],
+        model: T,
         object_id: str,
         isnew: bool = False,
-    ):
+    ) -> T | None:
         try:
             is_new = isnew if isnew else model.is_new()
-            entity = (
-                model
-                if is_new
-                else self._find_base(
-                    model_type,
-                    model.copy_only_id(),
-                )
-            )
+            entity: T = model
+            if is_new:
+                entity_from_db = self._find_base(model_type, model.copy_only_id())
+                if isinstance(entity_from_db, model_type):
+                    entity = entity_from_db
+
             entity.add_or_update(object_id)
             entity.copy_poperty(model, model.extract_valid_value().keys())
             self.session.add(entity)
@@ -202,8 +204,9 @@ class SQLSession:
             return entity
         except Exception as e:
             self.logg.error("save sql error", {"message": str(e)})
+            return None
 
-    def save(self, model_type: type, model: Base, object_id: str):
+    def save(self, model_type: type[T], model: T, object_id: str) -> T | None:
         self.logg.info("save sql", {"type": model_type.__name__})
         try:
             model.validate()
@@ -221,7 +224,7 @@ class SQLSession:
             raise VitaError(400, json.dumps(messages))
         return self._save_base(model_type, model, object_id)
 
-    def bulk_save(self, models: list[Base], object_id: str):
+    def bulk_save(self, models: list[T], object_id: str):
         self.logg.info("bulk save sql")
         try:
             for model in models:
@@ -231,7 +234,7 @@ class SQLSession:
         except Exception as e:
             self.logg.error("buls save sql error", {"message": str(e)})
 
-    def _delete_base(self, model_type: type, model: Base):
+    def _delete_base(self, model_type: type[T], model: T):
         try:
             entity = self._find_base(model_type, model.copy_only_id())
             self.session.delete(entity)
@@ -239,11 +242,11 @@ class SQLSession:
         except Exception as e:
             self.logg.error("delete sql error", {"message": str(e)})
 
-    def delete(self, model_type: type, model: Base):
+    def delete(self, model_type: type[T], model: T):
         self.logg.info("delete sql", {"type": model_type.__name__})
         self._delete_base(model_type, model)
 
-    def logical_delete(self, model_type: type, model: Base, object_id: str):
+    def logical_delete(self, model_type: type[T], model: T, object_id: str) -> T | None:
         self.logg.info("logical delete sql", {"type": model_type.__name__})
         model.logical_delete(object_id)
         try:
