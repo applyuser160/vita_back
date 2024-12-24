@@ -192,7 +192,7 @@ class SQLSession:
         try:
             is_new = isnew if isnew else model.is_new()
             entity: T = model
-            if is_new:
+            if not is_new:
                 entity_from_db = self._find_base(model_type, model.copy_only_id())
                 if isinstance(entity_from_db, model_type):
                     entity = entity_from_db
