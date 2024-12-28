@@ -169,3 +169,6 @@ class InnerJournalEntry(Base, table=True):  # type: ignore
     journal_entry: JournalEntry | None = Relationship(
         back_populates="inner_journal_entries"
     )
+
+
+Tunion = Account | SubAccount | JournalEntry | InnerJournalEntry

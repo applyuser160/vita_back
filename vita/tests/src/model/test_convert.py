@@ -195,3 +195,62 @@ def test_type_to_model_case02():
     assert isinstance(result, SubAccount)
     assert result.name == sub_account.name
     assert result.account.id == account.id
+
+
+def test_model_to_input_case01():
+    """
+    テスト観点:
+    一対多の接続があるモデル
+    """
+    sub_account = SubAccount(
+        name="sub account",
+        account_id="id",
+        description="desc",
+    )
+
+    account = Account(
+        id="id",
+        create_date=VitaDatetime.now(),
+        create_object_id="create",
+        update_date=VitaDatetime.now(),
+        update_object_id="update",
+        name="account name",
+        description="description",
+        dept=DeptEnum.CURRENT_ASSETS,
+        bs_pl=BsPlEnum.BS,
+        credit_debit=CreditDebitEnum.CREDIT,
+        sub_accounts=[sub_account],
+    )
+
+    result = GraphqlConvert.model_to_input(AccountGraphqlInput, account)
+
+    assert isinstance(result, AccountGraphqlInput)
+
+
+def test_model_to_type_case01():
+    """
+    テスト観点:
+    一対多の接続があるモデル
+    """
+    sub_account = SubAccount(
+        name="sub account",
+        account_id="id",
+        description="desc",
+    )
+
+    account = Account(
+        id="id",
+        create_date=VitaDatetime.now(),
+        create_object_id="create",
+        update_date=VitaDatetime.now(),
+        update_object_id="update",
+        name="account name",
+        description="description",
+        dept=DeptEnum.CURRENT_ASSETS,
+        bs_pl=BsPlEnum.BS,
+        credit_debit=CreditDebitEnum.CREDIT,
+        sub_accounts=[sub_account],
+    )
+
+    result = GraphqlConvert.model_to_type(AccountGraphqlType, account)
+    assert isinstance(result, AccountGraphqlType)
