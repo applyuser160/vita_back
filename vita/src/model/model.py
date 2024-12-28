@@ -158,7 +158,7 @@ class InnerJournalEntry(Base, table=True):  # type: ignore
     sub_account_id: str = Field(foreign_key="sub_account.id", max_length=40)
     amount: int
     credit_debit: CreditDebitEnum
-    index: int | None
+    index: int | None = Field(default=None)
 
     account: Account | None = Relationship(
         back_populates="inner_journal_entries_account"
