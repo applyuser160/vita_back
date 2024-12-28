@@ -1,3 +1,4 @@
+from typing import TypeVar
 import strawberry
 from vita.src.model.model import Account, InnerJournalEntry, JournalEntry, SubAccount
 
@@ -20,3 +21,20 @@ class InnerJournalEntryGraphqlType:
 @strawberry.experimental.pydantic.type(model=JournalEntry, all_fields=True)
 class JournalEntryGraphqlType:
     pass
+
+
+T = TypeVar(
+    "T",
+    AccountGraphqlType,
+    SubAccountGraphqlType,
+    JournalEntryGraphqlType,
+    InnerJournalEntryGraphqlType,
+)
+
+
+Tunion = (
+    AccountGraphqlType
+    | SubAccountGraphqlType
+    | JournalEntryGraphqlType
+    | InnerJournalEntryGraphqlType
+)

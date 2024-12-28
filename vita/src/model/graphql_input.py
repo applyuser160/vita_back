@@ -1,4 +1,5 @@
 from datetime import date
+from typing import TypeVar
 
 import strawberry
 from vita.src.model.model import (
@@ -63,3 +64,20 @@ class JournalEntriesGraphqlInput:
     status: StatusEnum | None
     account_id: str | None
     sub_account_id: str | None
+
+
+T = TypeVar(
+    "T",
+    AccountGraphqlInput,
+    SubAccountGraphqlInput,
+    JournalEntryGraphqlInput,
+    InnerJournalEntryGraphqlInput,
+)
+
+
+Tunion = (
+    AccountGraphqlInput
+    | SubAccountGraphqlInput
+    | JournalEntryGraphqlInput
+    | InnerJournalEntryGraphqlInput
+)
