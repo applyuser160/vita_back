@@ -23,8 +23,8 @@ class JournalEntryGraphqlType:
     pass
 
 
-T = TypeVar(
-    "T",
+Y = TypeVar(
+    "Y",
     AccountGraphqlType,
     SubAccountGraphqlType,
     JournalEntryGraphqlType,
@@ -32,7 +32,7 @@ T = TypeVar(
 )
 
 
-Tunion = (
+TypeUnion = (
     AccountGraphqlType
     | SubAccountGraphqlType
     | JournalEntryGraphqlType

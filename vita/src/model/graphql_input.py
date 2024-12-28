@@ -66,8 +66,8 @@ class JournalEntriesGraphqlInput:
     sub_account_id: str | None
 
 
-T = TypeVar(
-    "T",
+I = TypeVar(
+    "I",
     AccountGraphqlInput,
     SubAccountGraphqlInput,
     JournalEntryGraphqlInput,
@@ -75,7 +75,7 @@ T = TypeVar(
 )
 
 
-Tunion = (
+InputUnion = (
     AccountGraphqlInput
     | SubAccountGraphqlInput
     | JournalEntryGraphqlInput

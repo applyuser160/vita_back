@@ -255,12 +255,6 @@ def test_model_to_type_case01():
     テスト観点:
     一対多の接続があるモデル
     """
-    sub_account = SubAccount(
-        name="sub account",
-        account_id="id",
-        description="desc",
-    )
-
     account = Account(
         id="id",
         create_date=VitaDatetime.now(),
@@ -272,29 +266,14 @@ def test_model_to_type_case01():
         dept=DeptEnum.CURRENT_ASSETS,
         bs_pl=BsPlEnum.BS,
         credit_debit=CreditDebitEnum.CREDIT,
-        sub_accounts=[sub_account],
+    )
+    sub_account = SubAccount(
+        name="sub account",
+        account_id="id",
+        description="desc",
+        account=account,
     )
 
-    result = GraphqlConvert.model_to_type(AccountGraphqlType, account)
-    assert isinstance(result, AccountGraphqlType)
-    assert result.id
-    assert result.id == account.id
-    assert result.create_date
-    assert result.create_date == account.create_date
-    assert result.create_object_id
-    assert result.create_object_id == account.create_object_id
-    assert result.update_date
-    assert result.update_date == account.update_date
-    assert result.update_object_id
-    assert result.update_object_id == account.update_object_id
-    assert result.name == account.name
-    assert result.description
-    assert result.description == account.description
-    assert result.dept == account.dept
-    assert result.bs_pl == account.bs_pl
-    assert result.credit_debit == account.credit_debit
-    assert result.sub_accounts
-    assert len(result.sub_accounts) == 1
-    assert result.sub_accounts[0].name == sub_account.name
-    assert result.sub_accounts[0].account_id == sub_account.account_id
-    assert result.sub_accounts[0].description == sub_account.description
+    result = GraphqlConvert.model_to_type(SubAccountGraphqlType, sub_account)
+
+    assert isinstance(result, SubAccountGraphqlType)

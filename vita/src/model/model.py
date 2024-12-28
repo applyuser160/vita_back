@@ -171,4 +171,4 @@ class InnerJournalEntry(Base, table=True):  # type: ignore
     )
 
 
-Tunion = Account | SubAccount | JournalEntry | InnerJournalEntry
+ModelUnion = Account | SubAccount | JournalEntry | InnerJournalEntry
