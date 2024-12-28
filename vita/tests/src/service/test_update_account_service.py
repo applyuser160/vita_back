@@ -6,6 +6,7 @@ from sqlmodel import select
 from vita.src.model.graphql_input import AccountGraphqlInput
 from vita.src.model.model import Account, BsPlEnum, CreditDebitEnum, DeptEnum
 from vita.src.service.update_account_service import UpdateAccountService
+from vita.src.util.dt import VitaDatetime
 from vita.src.util.sql_model import SQLSession
 
 
@@ -143,7 +144,7 @@ def test_update_account_service_case04(session: SQLSession):
     assert message_dict["location"] == ["credit_debit"]
 
 
-@patch("util.dt.VitaDatetime.now")
+@patch.object(VitaDatetime, "now")
 def test_update_account_service_case05(now: Mock, session: SQLSession):
     """
     テスト観点:

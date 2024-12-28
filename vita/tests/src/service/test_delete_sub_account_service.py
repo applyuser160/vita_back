@@ -6,10 +6,11 @@ from vita.src.model.graphql_input import SubAccountGraphqlInput
 from vita.src.model.graphql_type import SubAccountGraphqlType
 from vita.src.model.model import SubAccount
 from vita.src.service.delete_sub_account_service import DeleteSubAccountService
+from vita.src.util.dt import VitaDatetime
 from vita.src.util.sql_model import SQLSession
 
 
-@patch("util.dt.VitaDatetime.now")
+@patch.object(VitaDatetime, "now")
 def test_update_account_service_case01(now: Mock, session: SQLSession):
     """
     テスト観点:

@@ -9,12 +9,12 @@ from model.graphql_type import (
     JournalEntryGraphqlType,
     SubAccountGraphqlType,
 )
-from service.create_account_service import CreateAccountService
-from service.update_account_service import UpdateAccountService
-from service.delete_account_service import DeleteAccountService
-from util.err import VitaError
-from util.sql_model import SQLSession
-from util.logg import Logg
+from vita.src.service.create_account_service import CreateAccountService
+from vita.src.service.update_account_service import UpdateAccountService
+from vita.src.service.delete_account_service import DeleteAccountService
+from vita.src.util.err import VitaError
+from vita.src.util.sql_model import SQLSession
+from vita.src.util.logg import Logg
 
 
 @strawberry.type

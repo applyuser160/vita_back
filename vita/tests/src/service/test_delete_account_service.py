@@ -5,10 +5,11 @@ from sqlmodel import select
 from vita.src.model.graphql_input import AccountGraphqlInput
 from vita.src.model.model import Account, BsPlEnum, CreditDebitEnum, DeptEnum
 from vita.src.service.delete_account_service import DeleteAccountService
+from vita.src.util.dt import VitaDatetime
 from vita.src.util.sql_model import SQLSession
 
 
-@patch("util.dt.VitaDatetime.now")
+@patch.object(VitaDatetime, "now")
 def test_delete_account_service_case01(now: Mock, session: SQLSession):
     """
     テスト観点:

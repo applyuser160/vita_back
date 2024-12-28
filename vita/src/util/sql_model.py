@@ -10,8 +10,8 @@ from pydantic import ValidationError
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Query
 from sqlmodel import Field, Session, SQLModel, create_engine, select
-from util.err import VitaError
-from util.dt import VitaDatetime
+from .err import VitaError
+from .dt import VitaDatetime
 
 from .condition import Condition, ConditionType
 from .env import get

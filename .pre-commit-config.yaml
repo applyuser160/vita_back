@@ -31,4 +31,5 @@ repos:
       - id: mypy
         additional_dependencies:
           - types-pyyaml
+          - strawberry-graphql
         exclude: tests/

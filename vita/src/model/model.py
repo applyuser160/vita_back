@@ -2,8 +2,8 @@ from datetime import date
 from enum import IntEnum
 
 import strawberry
-from sqlmodel import Field
-from util.sql_model import Base
+from sqlmodel import Field, Relationship
+from vita.src.util.sql_model import Base
 
 
 @strawberry.enum
@@ -130,19 +130,26 @@ class SubAccount(Base, table=True):  # type: ignore
     description: str | None = Field(default=None, max_length=500)
 
 
-class InnerJournalEntry(Base, table=True):  # type: ignore
-    __tablename__ = "inner_journal_entry"
-    journal_entry_id: str = Field(max_length=40)
-    account_id: str = Field(max_length=40)
-    sub_account_id: str = Field(max_length=40)
-    amount: int
-    credit_debit: CreditDebitEnum
-    index: int | None
-
-
 class JournalEntry(Base, table=True):  # type: ignore
     __tablename__ = "journal_entry"
     name: str | None = Field(default=None, max_length=100)
     description: str | None = Field(default=None, max_length=500)
     date: date
     status: StatusEnum
+    inner_journal_entries: list["InnerJournalEntry"] = Relationship(
+        back_populates="journal_entry"
+    )
+
+
+class InnerJournalEntry(Base, table=True):  # type: ignore
+    __tablename__ = "inner_journal_entry"
+    journal_entry_id: str = Field(foreign_key="journal_entry.id", max_length=40)
+    account_id: str = Field(max_length=40)
+    sub_account_id: str = Field(max_length=40)
+    amount: int
+    credit_debit: CreditDebitEnum
+    index: int | None
+
+    journal_entry: JournalEntry | None = Relationship(
+        back_populates="inner_journal_entries"
+    )

@@ -10,9 +10,9 @@ from model.graphql_type import (
     JournalEntryGraphqlType,
     SubAccountGraphqlType,
 )
-from util.err import VitaError
-from util.logg import Logg
-from util.sql_model import SQLSession
+from vita.src.util.err import VitaError
+from vita.src.util.logg import Logg
+from vita.src.util.sql_model import SQLSession
 
 
 @strawberry.type
@@ -29,7 +29,7 @@ class Query:
     def accounts(
         self, input: AccountsGraphqlInput
     ) -> list[AccountGraphqlType] | VitaError:
-        pass
+        return []
 
     @strawberry.field
     def sub_account(
@@ -41,7 +41,7 @@ class Query:
     def sub_accounts(
         self, input: SubAccountsGraphqlInput
     ) -> list[SubAccountGraphqlType] | VitaError:
-        pass
+        return []
 
     @strawberry.field
     def journal_entry(
@@ -53,4 +53,4 @@ class Query:
     def journal_entries(
         self, input: JournalEntriesGraphqlInput
     ) -> list[JournalEntryGraphqlType] | VitaError:
-        pass
+        return []

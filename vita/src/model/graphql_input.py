@@ -1,7 +1,7 @@
 from datetime import date
 
 import strawberry
-from model.model import (
+from vita.src.model.model import (
     Account,
     BsPlEnum,
     CreditDebitEnum,
@@ -28,20 +28,9 @@ class InnerJournalEntryGraphqlInput:
     pass
 
 
-@strawberry.experimental.pydantic.input(model=JournalEntry)
+@strawberry.experimental.pydantic.input(model=JournalEntry, all_fields=True)
 class JournalEntryGraphqlInput:
-    id: strawberry.auto
-    name: strawberry.auto
-    description: strawberry.auto
-    date: strawberry.auto
-    status: strawberry.auto
-    create_date: strawberry.auto
-    create_object_id: strawberry.auto
-    update_date: strawberry.auto
-    update_object_id: strawberry.auto
-    delete_date: strawberry.auto
-    delete_object_id: strawberry.auto
-    inner_journal_entries: list[InnerJournalEntryGraphqlInput]
+    pass
 
 
 @strawberry.input

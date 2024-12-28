@@ -1,5 +1,5 @@
 import strawberry
-from model.model import Account, InnerJournalEntry, JournalEntry, SubAccount
+from vita.src.model.model import Account, InnerJournalEntry, JournalEntry, SubAccount
 
 
 @strawberry.experimental.pydantic.type(model=Account, all_fields=True)
@@ -17,17 +17,6 @@ class InnerJournalEntryGraphqlType:
     pass
 
 
-@strawberry.experimental.pydantic.type(model=JournalEntry)
+@strawberry.experimental.pydantic.type(model=JournalEntry, all_fields=True)
 class JournalEntryGraphqlType:
-    id: strawberry.auto
-    name: strawberry.auto
-    description: strawberry.auto
-    date: strawberry.auto
-    status: strawberry.auto
-    create_date: strawberry.auto
-    create_object_id: strawberry.auto
-    update_date: strawberry.auto
-    update_object_id: strawberry.auto
-    delete_date: strawberry.auto
-    delete_object_id: strawberry.auto
-    inner_journal_entries: list[InnerJournalEntryGraphqlType]
+    pass
