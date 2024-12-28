@@ -122,12 +122,22 @@ class Account(Base, table=True):  # type: ignore
     bs_pl: BsPlEnum
     credit_debit: CreditDebitEnum
 
+    sub_accounts: list["SubAccount"] = Relationship(back_populates="account")
+    inner_journal_entries_account: list["InnerJournalEntry"] = Relationship(
+        back_populates="account"
+    )
+
 
 class SubAccount(Base, table=True):  # type: ignore
     __tablename__ = "sub_account"
     name: str = Field(max_length=100)
-    account_id: str = Field(max_length=40)
+    account_id: str = Field(foreign_key="account.id", max_length=40)
     description: str | None = Field(default=None, max_length=500)
+
+    account: Account | None = Relationship(back_populates="sub_accounts")
+    inner_journal_entries_sub: list["InnerJournalEntry"] = Relationship(
+        back_populates="sub_account"
+    )
 
 
 class JournalEntry(Base, table=True):  # type: ignore
@@ -144,12 +154,18 @@ class JournalEntry(Base, table=True):  # type: ignore
 class InnerJournalEntry(Base, table=True):  # type: ignore
     __tablename__ = "inner_journal_entry"
     journal_entry_id: str = Field(foreign_key="journal_entry.id", max_length=40)
-    account_id: str = Field(max_length=40)
-    sub_account_id: str = Field(max_length=40)
+    account_id: str = Field(foreign_key="account.id", max_length=40)
+    sub_account_id: str = Field(foreign_key="sub_account.id", max_length=40)
     amount: int
     credit_debit: CreditDebitEnum
     index: int | None
 
+    account: Account | None = Relationship(
+        back_populates="inner_journal_entries_account"
+    )
+    sub_account: SubAccount | None = Relationship(
+        back_populates="inner_journal_entries_sub"
+    )
     journal_entry: JournalEntry | None = Relationship(
         back_populates="inner_journal_entries"
     )
