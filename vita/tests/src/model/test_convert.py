@@ -222,9 +222,32 @@ def test_model_to_input_case01():
         sub_accounts=[sub_account],
     )
 
-    result = GraphqlConvert.model_to_input(AccountGraphqlInput, account)
+    result: AccountGraphqlInput = GraphqlConvert.model_to_input(
+        AccountGraphqlInput, account
+    )
 
     assert isinstance(result, AccountGraphqlInput)
+    assert result.id
+    assert result.id == account.id
+    assert result.create_date
+    assert result.create_date == account.create_date
+    assert result.create_object_id
+    assert result.create_object_id == account.create_object_id
+    assert result.update_date
+    assert result.update_date == account.update_date
+    assert result.update_object_id
+    assert result.update_object_id == account.update_object_id
+    assert result.name == account.name
+    assert result.description
+    assert result.description == account.description
+    assert result.dept == account.dept
+    assert result.bs_pl == account.bs_pl
+    assert result.credit_debit == account.credit_debit
+    assert result.sub_accounts
+    assert len(result.sub_accounts) == 1
+    assert result.sub_accounts[0].name == sub_account.name
+    assert result.sub_accounts[0].account_id == sub_account.account_id
+    assert result.sub_accounts[0].description == sub_account.description
 
 
 def test_model_to_type_case01():
@@ -254,3 +277,24 @@ def test_model_to_type_case01():
 
     result = GraphqlConvert.model_to_type(AccountGraphqlType, account)
     assert isinstance(result, AccountGraphqlType)
+    assert result.id
+    assert result.id == account.id
+    assert result.create_date
+    assert result.create_date == account.create_date
+    assert result.create_object_id
+    assert result.create_object_id == account.create_object_id
+    assert result.update_date
+    assert result.update_date == account.update_date
+    assert result.update_object_id
+    assert result.update_object_id == account.update_object_id
+    assert result.name == account.name
+    assert result.description
+    assert result.description == account.description
+    assert result.dept == account.dept
+    assert result.bs_pl == account.bs_pl
+    assert result.credit_debit == account.credit_debit
+    assert result.sub_accounts
+    assert len(result.sub_accounts) == 1
+    assert result.sub_accounts[0].name == sub_account.name
+    assert result.sub_accounts[0].account_id == sub_account.account_id
+    assert result.sub_accounts[0].description == sub_account.description
