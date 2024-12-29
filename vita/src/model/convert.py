@@ -48,44 +48,95 @@ class GraphqlConvert:
             return InnerJournalEntryGraphqlType
 
     @classmethod
+    def copy_models(cls, models: list[T]) -> list[T]:
+        return [
+            type(model)(
+                **{
+                    k: v
+                    for k, v in model.model_dump().items()
+                    if k in type(model).model_fields.keys() and v
+                }
+            )
+            for model in models
+        ]
+
+    @classmethod
     def input_to_model(cls, model: type[T], input: I) -> T:
         keys = [
             key
             for key in vars(input).keys()
             if not key.startswith("_") and key not in ["model_config"]
         ]
-        result = model()
+
+        attrs: dict = {}
         for key in keys:
             try:
                 value = input.__getattribute__(key)
             except AttributeError:
                 continue
+
             if isinstance(value, list):
-                value = [inner.to_pydantic() for inner in value]
+                value = [
+                    inner._pydantic_type(
+                        **{
+                            k: v
+                            for k, v in inner.to_pydantic().model_dump().items()
+                            if k in inner.to_pydantic().model_fields.keys() and v
+                        }
+                    )
+                    for inner in value
+                ]
             elif isinstance(value, InputUnion):
-                value = value.to_pydantic()  # type: ignore
-            result.__setattr__(key, value)
-        return result
+                value = value._pydantic_type(  # type: ignore
+                    **{
+                        k: v
+                        for k, v in value.to_pydantic().model_dump().items()  # type: ignore
+                        if k in value.to_pydantic().model_fields.keys() and v  # type: ignore
+                    }
+                )
+
+            attrs[key] = value
+
+        return model(**attrs)
 
     @classmethod
     def type_to_model(cls, model: type[T], type: Y) -> T:
         keys = [
             key
-            for key in vars(model).keys()
+            for key in vars(type).keys()
             if not key.startswith("_") and key not in ["model_config"]
         ]
-        result = model()
+
+        attrs: dict = {}
         for key in keys:
             try:
                 value = type.__getattribute__(key)
             except AttributeError:
                 continue
+
             if isinstance(value, list):
-                value = [inner.to_pydantic() for inner in value]
+                value = [
+                    inner._pydantic_type(
+                        **{
+                            k: v
+                            for k, v in inner.to_pydantic().model_dump().items()
+                            if k in inner.to_pydantic().model_fields.keys() and v
+                        }
+                    )
+                    for inner in value
+                ]
             elif isinstance(value, TypeUnion):
-                value = value.to_pydantic()  # type: ignore
-            result.__setattr__(key, value)
-        return result
+                value = value._pydantic_type(  # type: ignore
+                    **{
+                        k: v
+                        for k, v in value.to_pydantic().model_dump().items()  # type: ignore
+                        if k in value.to_pydantic().model_fields.keys() and v  # type: ignore
+                    }
+                )
+
+            attrs[key] = value
+
+        return model(**attrs)
 
     @classmethod
     def model_to_input(cls, input: type[I], model: T) -> I:

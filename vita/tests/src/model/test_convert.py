@@ -9,6 +9,7 @@ from vita.src.model.graphql_input import AccountGraphqlInput, SubAccountGraphqlI
 from vita.src.model.graphql_type import AccountGraphqlType, SubAccountGraphqlType
 from vita.src.model.convert import GraphqlConvert
 from vita.src.util.dt import VitaDatetime
+from vita.src.util.sql_model import SQLSession
 
 
 def test_input_to_model_case01():
@@ -103,6 +104,51 @@ def test_input_to_model_case02():
     assert isinstance(result, SubAccount)
     assert result.name == sub_account.name
     assert result.account.id == account.id
+
+
+def test_input_to_model_case03(session: SQLSession):
+    """
+    テスト観点:
+    DBへレコードを挿入
+    """
+    sub_account = SubAccount(
+        name="sub account",
+        account_id="id",
+        description="desc",
+    )
+
+    account = Account(
+        id="id",
+        create_date=VitaDatetime.now(),
+        create_object_id="create",
+        update_date=VitaDatetime.now(),
+        update_object_id="update",
+        name="account name",
+        description="description",
+        dept=DeptEnum.CURRENT_ASSETS,
+        bs_pl=BsPlEnum.BS,
+        credit_debit=CreditDebitEnum.CREDIT,
+    )
+
+    input = AccountGraphqlInput.from_pydantic(account)
+    input.__setattr__(
+        "sub_accounts", [SubAccountGraphqlInput.from_pydantic(sub_account)]
+    )
+
+    assert input.sub_accounts
+
+    model = GraphqlConvert.input_to_model(Account, input)
+    inner_models = GraphqlConvert.copy_models(model.sub_accounts)
+
+    session.save(Account, model, "system", True)
+    for inner_model in inner_models:
+        session.save(SubAccount, inner_model, "system", True)
+
+    records = session.find(Account, isOne=False)
+    inner_records = session.find(SubAccount, isOne=False)
+
+    assert len(records) == 1
+    assert len(inner_records) == 1
 
 
 def test_type_to_model_case01():
