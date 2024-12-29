@@ -140,9 +140,9 @@ def test_input_to_model_case03(session: SQLSession):
     model = GraphqlConvert.input_to_model(Account, input)
     inner_models = GraphqlConvert.copy_models(model.sub_accounts)
 
-    session.save(Account, model, "system", True)
+    session.save(Account, model, "system")
     for inner_model in inner_models:
-        session.save(SubAccount, inner_model, "system", True)
+        session.save(SubAccount, inner_model, "system")
 
     records = session.find(Account, isOne=False)
     inner_records = session.find(SubAccount, isOne=False)
