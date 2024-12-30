@@ -61,6 +61,16 @@ class GraphqlConvert:
         ]
 
     @classmethod
+    def copy_model(cls, model: T) -> T:
+        return type(model)(
+            **{
+                k: v
+                for k, v in model.model_dump().items()
+                if k in type(model).model_fields.keys() and v
+            }
+        )
+
+    @classmethod
     def input_to_model(cls, model: type[T], input: I) -> T:
         keys = [
             key

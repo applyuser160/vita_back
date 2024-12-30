@@ -199,7 +199,10 @@ class SQLSession:
 
             entity.add_or_update(object_id)
             entity.copy_poperty(model, model.extract_valid_value().keys())
-            self.session.add(entity)
+            if is_new:
+                self.session.add(entity)
+            else:
+                self.session.merge(entity)
             self.session.commit()
             return entity
         except Exception as e:

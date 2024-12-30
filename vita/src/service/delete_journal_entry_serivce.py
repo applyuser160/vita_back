@@ -11,7 +11,7 @@ from vita.src.util.sql_model import SQLSession
 from .base_service import BaseService
 
 
-class CreateJournalEntryService(BaseService):
+class DeleteJournalEntryService(BaseService):
 
     def __init__(self, session: SQLSession):
         super().__init__(session)
@@ -22,22 +22,23 @@ class CreateJournalEntryService(BaseService):
     ) -> JournalEntryGraphqlType | VitaError:
 
         journal_entry = GraphqlConvert.input_to_model(JournalEntry, input)
-        journal_entry.id = None
+
         inner_journal_entries = GraphqlConvert.copy_models(
             journal_entry.inner_journal_entries
         )
+        journal_entry = GraphqlConvert.copy_model(journal_entry)
 
         try:
-            result = self.session.save(JournalEntry, journal_entry, SYSTEM_USER)
+            result = self.session.logical_delete(
+                JournalEntry, journal_entry, SYSTEM_USER
+            )
             if not result or not result.id:
                 return VitaError(500, "Failed to create journal entry")
 
-            for inner_journal_entry in inner_journal_entries:
-                inner_journal_entry.journal_entry_id = result.id
-                inner_journal_entry.id = None
-
             inner_result = [
-                self.session.save(InnerJournalEntry, inner_journal_entry, SYSTEM_USER)
+                self.session.logical_delete(
+                    InnerJournalEntry, inner_journal_entry, SYSTEM_USER
+                )
                 for inner_journal_entry in inner_journal_entries
             ]
         except VitaError as e:
