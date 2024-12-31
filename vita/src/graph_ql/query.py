@@ -10,6 +10,8 @@ from model.graphql_type import (
     JournalEntryGraphqlType,
     SubAccountGraphqlType,
 )
+from vita.src.service.get_account_service import GetAccountService
+from vita.src.service.get_accounts_service import GetAccountsService
 from vita.src.util.err import VitaError
 from vita.src.util.logg import Logg
 from vita.src.util.sql_model import SQLSession
@@ -23,13 +25,13 @@ class Query:
 
     @strawberry.field
     def account(self, input: SingleGraphqlInput) -> AccountGraphqlType | VitaError:
-        pass
+        return GetAccountService(self.get_session()).execute(input)
 
     @strawberry.field
     def accounts(
         self, input: AccountsGraphqlInput
     ) -> list[AccountGraphqlType] | VitaError:
-        return []
+        return GetAccountsService(self.get_session()).execute(input)
 
     @strawberry.field
     def sub_account(

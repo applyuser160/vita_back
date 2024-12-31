@@ -23,7 +23,9 @@ class Condition:
     value: Any  # type: ignore
     isnot: bool
 
-    def __init__(self, target: Column, type: ConditionType, value: Any, isnot: bool):
+    def __init__(
+        self, target: Column, type: ConditionType, value: Any, isnot: bool = False
+    ):
         self.target = col(target)
         self.type = type
         self.value = value
