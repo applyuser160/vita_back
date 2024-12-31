@@ -10,6 +10,7 @@ from pydantic import ValidationError
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Query
 from sqlmodel import Field, Session, SQLModel, create_engine, select
+from sqlmodel.sql.expression import Select
 from .err import VitaError
 from .dt import VitaDatetime
 
@@ -109,7 +110,7 @@ class SQLSession:
 
     def _append_where(
         self,
-        query: Query,
+        query: Select,
         model_type: type[T],
         cond: T | None,
         type: ConditionType,
@@ -125,7 +126,7 @@ class SQLSession:
         return query
 
     def _exec_query(
-        self, query: Query, model_type: type[T], isOne: bool
+        self, query: Select, model_type: type[T], isOne: bool, is_unique: bool = False
     ) -> list[T] | T | None:
         self.logg.info(
             "execute query.",
@@ -136,7 +137,10 @@ class SQLSession:
         )
         try:
             if isOne:
-                result = self.session.exec(query).first()
+                if is_unique:
+                    result = self.session.exec(query).unique().one_or_none()
+                else:
+                    result = self.session.exec(query).one_or_none()
                 if result is None:
                     return None
                 elif result.is_empty():
@@ -144,7 +148,10 @@ class SQLSession:
                 else:
                     return result
             else:
-                result = self.session.exec(query).all()
+                if is_unique:
+                    result = self.session.exec(query).unique().all()
+                else:
+                    result = self.session.exec(query).all()
                 if len(result) == 0:
                     return []
                 else:
@@ -154,10 +161,10 @@ class SQLSession:
             return None
 
     def execute(
-        self, query: Query, model_type: type[T], isOne: bool
+        self, query: Select, model_type: type[T], isOne: bool, is_unique: bool = False
     ) -> list[T] | T | None:
         self.logg.info("execute sql", {"type": model_type.__name__})
-        return self._exec_query(query, model_type, isOne)
+        return self._exec_query(query, model_type, isOne, is_unique)
 
     def _find_base(
         self,
@@ -227,15 +234,17 @@ class SQLSession:
             raise VitaError(400, json.dumps(messages))
         return self._save_base(model_type, model, object_id)
 
-    def bulk_save(self, models: list[T], object_id: str):
+    def bulk_save(self, models: list[T], object_id: str) -> list[T]:
         self.logg.info("bulk save sql")
         try:
             for model in models:
                 model.add_or_update(object_id)
             self.session.bulk_save_objects(models)
             self.session.commit()
+            return models
         except Exception as e:
             self.logg.error("buls save sql error", {"message": str(e)})
+            raise VitaError(400, str(e))
 
     def _delete_base(self, model_type: type[T], model: T):
         try:

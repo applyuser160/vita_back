@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import Any
+from sqlmodel import col
+from sqlalchemy import BinaryExpression, Column
 
 
 class ConditionType(Enum):
@@ -15,26 +17,21 @@ class ConditionType(Enum):
     LIKE = 7
 
 
-class ConditionRelationType(Enum):
-    AND = 0
-    OR = 1
-
-
 class Condition:
-    target: Any  # type: ignore
+    target: Column  # type: ignore
     type: ConditionType
     value: Any  # type: ignore
     isnot: bool
 
-    def __init__(self, target: Any, type: ConditionType, value: Any, isnot: bool):
-        self.target = target
+    def __init__(self, target: Column, type: ConditionType, value: Any, isnot: bool):
+        self.target = col(target)
         self.type = type
         self.value = value
         self.isnot = isnot
 
-    def to_sqlachemy(self):
+    def to_sqlachemy(self) -> BinaryExpression:
         if type == ConditionType.EQUAL:
-            result: bool = self.target == self.value  # type: ignore
+            result = self.target == self.value  # type: ignore
         elif type == ConditionType.NOT_EQUAL:
             result = self.target != self.value
         elif type == ConditionType.GREATER_THAN:
