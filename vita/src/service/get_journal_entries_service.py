@@ -1,6 +1,6 @@
 from typing import override
 
-from sqlmodel import select
+from sqlmodel import col, select
 from sqlalchemy.orm import joinedload
 
 from vita.src.model.convert import GraphqlConvert
@@ -24,6 +24,7 @@ class GetJournalEntriesService(BaseService):
         self, input: JournalEntriesGraphqlInput
     ) -> list[JournalEntryGraphqlType] | VitaError:
         conditions = []
+        inner_conditions = []
 
         if input.name:
             cond = Condition(JournalEntry.name, ConditionType.LIKE, input.name)
@@ -53,7 +54,7 @@ class GetJournalEntriesService(BaseService):
             cond = Condition(
                 InnerJournalEntry.account_id, ConditionType.EQUAL, input.account_id
             )
-            conditions.append(cond.to_sqlachemy())
+            inner_conditions.append(cond.to_sqlachemy())
 
         if input.sub_account_id:
             cond = Condition(
@@ -61,13 +62,23 @@ class GetJournalEntriesService(BaseService):
                 ConditionType.EQUAL,
                 input.sub_account_id,
             )
-            conditions.append(cond.to_sqlachemy())
+            inner_conditions.append(cond.to_sqlachemy())
+
+        # inner_journal_entryの条件ありの場合、サブクエリにて条件検索を行う
+        if has_inner_condition := input.account_id or input.sub_account_id:
+            sub_query = select(InnerJournalEntry.journal_entry_id).where(
+                *inner_conditions
+            )
+
+            cond = col(JournalEntry.id).in_(sub_query)
+            conditions.append(cond)
 
         query = (
             select(JournalEntry)
             .options(joinedload(JournalEntry.inner_journal_entries))
             .where(*conditions)
         )
+
         journal_entries = self.session.execute(query, JournalEntry, False, True)
 
         if not journal_entries:
@@ -76,4 +87,6 @@ class GetJournalEntriesService(BaseService):
         return [
             GraphqlConvert.model_to_type(JournalEntryGraphqlType, journal_entry)
             for journal_entry in journal_entries
+            if not has_inner_condition
+            or (has_inner_condition and journal_entry.inner_journal_entries)
         ]

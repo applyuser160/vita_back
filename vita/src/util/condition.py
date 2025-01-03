@@ -32,11 +32,15 @@ class Condition:
         self.isnot = isnot
 
     def to_sqlachemy(self) -> BinaryExpression:
-        match type:
+        match self.type:
             case ConditionType.EQUAL:
-                result = self.target == self.value  # type: ignore
+                result = col(self.target).is_(self.value) if self.value is None else self.target == self.value  # type: ignore
             case ConditionType.NOT_EQUAL:
-                result = self.target != self.value
+                result = (
+                    col(self.target).is_not(self.value)
+                    if self.value is None
+                    else self.target != self.value
+                )
             case ConditionType.GREATER_THAN:
                 result = self.target >= self.value
             case ConditionType.GREATER:
