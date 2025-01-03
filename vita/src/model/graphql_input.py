@@ -41,29 +41,29 @@ class SingleGraphqlInput:
 
 @strawberry.input
 class AccountsGraphqlInput:
-    name: str | None
-    description: str | None
-    dept: DeptEnum | None
-    bs_pl: BsPlEnum | None
-    credit_debit: CreditDebitEnum | None
+    name: str | None = None
+    description: str | None = None
+    dept: DeptEnum | None = None
+    bs_pl: BsPlEnum | None = None
+    credit_debit: CreditDebitEnum | None = None
 
 
 @strawberry.input
 class SubAccountsGraphqlInput:
-    name: str | None
-    account_id: str | None
-    description: str | None
+    name: str | None = None
+    account_id: str | None = None
+    description: str | None = None
 
 
 @strawberry.input
 class JournalEntriesGraphqlInput:
-    name: str | None
-    description: str | None
-    from_date: date | None
-    to_date: date | None
-    status: StatusEnum | None
-    account_id: str | None
-    sub_account_id: str | None
+    name: str | None = None
+    description: str | None = None
+    from_date: date | None = None
+    to_date: date | None = None
+    status: StatusEnum | None = None
+    account_id: str | None = None
+    sub_account_id: str | None = None
 
 
 I = TypeVar(
