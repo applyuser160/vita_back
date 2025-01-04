@@ -7,6 +7,7 @@ from vita.src.model.graphql_input import SubAccountGraphqlInput
 from vita.src.model.graphql_type import SubAccountGraphqlType
 from vita.src.model.model import SubAccount
 from vita.src.service.update_sub_account_service import UpdateSubAccountService
+from vita.src.util.constant import SYSTEM_USER
 from vita.src.util.dt import VitaDatetime
 from vita.src.util.sql_model import SQLSession
 
@@ -22,7 +23,7 @@ def test_update_sub_account_service_case01(session: SQLSession):
         account_id="id",
         description="des",
     )
-    sub_account = session.save(SubAccount, sub_account, "system")
+    sub_account = session.save(SubAccount, sub_account, SYSTEM_USER)
 
     sub_account.name = "0" * 101
     input = SubAccountGraphqlInput.from_pydantic(sub_account)
@@ -50,7 +51,7 @@ def test_update_account_service_case02(session: SQLSession):
         account_id="id",
         description="des",
     )
-    sub_account = session.save(SubAccount, sub_account, "system")
+    sub_account = session.save(SubAccount, sub_account, SYSTEM_USER)
 
     sub_account.name = None
     input = SubAccountGraphqlInput.from_pydantic(sub_account)
@@ -78,7 +79,7 @@ def test_update_account_service_case03(session: SQLSession):
         account_id="id",
         description="des",
     )
-    sub_account = session.save(SubAccount, sub_account, "system")
+    sub_account = session.save(SubAccount, sub_account, SYSTEM_USER)
 
     sub_account.description = "0" * 501
     input = SubAccountGraphqlInput.from_pydantic(sub_account)
@@ -109,7 +110,7 @@ def test_update_account_service_case05(now: Mock, session: SQLSession):
         account_id="id",
         description="des",
     )
-    sub_account = session.save(SubAccount, sub_account, "system")
+    sub_account = session.save(SubAccount, sub_account, SYSTEM_USER)
 
     sub_account.name = "new name"
     sub_account.description = "description"
@@ -127,11 +128,11 @@ def test_update_account_service_case05(now: Mock, session: SQLSession):
     assert sub_account.update_date
     assert sub_account.update_date == datetime(2024, 1, 1, 9, 0, 0, 0)
     assert sub_account.update_object_id
-    assert sub_account.update_object_id == "system"
+    assert sub_account.update_object_id == SYSTEM_USER
     assert sub_account.update_date
     assert sub_account.update_date == datetime(2024, 1, 1, 9, 0, 0, 0)
     assert sub_account.update_object_id
-    assert sub_account.update_object_id == "system"
+    assert sub_account.update_object_id == SYSTEM_USER
     assert not sub_account.delete_date
     assert not sub_account.delete_object_id
 

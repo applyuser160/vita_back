@@ -7,6 +7,7 @@ from vita.src.model.graphql_input import SubAccountGraphqlInput
 from vita.src.model.graphql_type import SubAccountGraphqlType
 from vita.src.model.model import SubAccount
 from vita.src.service.create_sub_account_service import CreateSubAccountService
+from vita.src.util.constant import SYSTEM_USER
 from vita.src.util.dt import VitaDatetime
 from vita.src.util.sql_model import SQLSession
 
@@ -114,11 +115,11 @@ def test_create_account_service_case05(now: Mock, session: SQLSession):
     assert sub_account.create_date
     assert sub_account.create_date == datetime(2024, 1, 1, 9, 0, 0, 0)
     assert sub_account.create_object_id
-    assert sub_account.create_object_id == "system"
+    assert sub_account.create_object_id == SYSTEM_USER
     assert sub_account.update_date
     assert sub_account.create_date == datetime(2024, 1, 1, 9, 0, 0, 0)
     assert sub_account.update_object_id
-    assert sub_account.update_object_id == "system"
+    assert sub_account.update_object_id == SYSTEM_USER
     assert not sub_account.delete_date
     assert not sub_account.delete_object_id
 

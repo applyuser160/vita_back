@@ -8,6 +8,7 @@ from vita.src.model.model import (
 from vita.src.model.graphql_input import AccountGraphqlInput, SubAccountGraphqlInput
 from vita.src.model.graphql_type import AccountGraphqlType, SubAccountGraphqlType
 from vita.src.model.convert import GraphqlConvert
+from vita.src.util.constant import SYSTEM_USER
 from vita.src.util.dt import VitaDatetime
 from vita.src.util.sql_model import SQLSession
 
@@ -140,9 +141,9 @@ def test_input_to_model_case03(session: SQLSession):
     model = GraphqlConvert.input_to_model(Account, input)
     inner_models = GraphqlConvert.copy_models(model.sub_accounts)
 
-    session.save(Account, model, "system")
+    session.save(Account, model, SYSTEM_USER)
     for inner_model in inner_models:
-        session.save(SubAccount, inner_model, "system")
+        session.save(SubAccount, inner_model, SYSTEM_USER)
 
     records = session.find(Account, isOne=False)
     inner_records = session.find(SubAccount, isOne=False)

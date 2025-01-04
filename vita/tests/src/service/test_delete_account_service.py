@@ -5,6 +5,7 @@ from sqlmodel import select
 from vita.src.model.graphql_input import AccountGraphqlInput
 from vita.src.model.model import Account, BsPlEnum, CreditDebitEnum, DeptEnum
 from vita.src.service.delete_account_service import DeleteAccountService
+from vita.src.util.constant import SYSTEM_USER
 from vita.src.util.dt import VitaDatetime
 from vita.src.util.sql_model import SQLSession
 
@@ -25,7 +26,7 @@ def test_delete_account_service_case01(now: Mock, session: SQLSession):
         bs_pl=BsPlEnum.BS,
         credit_debit=CreditDebitEnum.DEBIT,
     )
-    account = session.save(Account, account, "system")
+    account = session.save(Account, account, SYSTEM_USER)
 
     input = AccountGraphqlInput.from_pydantic(account)
 
@@ -44,11 +45,11 @@ def test_delete_account_service_case01(now: Mock, session: SQLSession):
     assert account.create_date
     assert account.create_date == datetime(2024, 1, 1, 9, 0, 0, 0)
     assert account.create_object_id
-    assert account.create_object_id == "system"
+    assert account.create_object_id == SYSTEM_USER
     assert account.update_date
     assert account.create_date == datetime(2024, 1, 1, 9, 0, 0, 0)
     assert account.update_object_id
-    assert account.update_object_id == "system"
+    assert account.update_object_id == SYSTEM_USER
     assert account.delete_date
     assert account.delete_date == datetime(2024, 1, 1, 9, 0, 0, 0)
     assert account.delete_object_id

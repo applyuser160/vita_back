@@ -10,6 +10,7 @@ from vita.src.model.model import (
     StatusEnum,
 )
 from vita.src.service.create_journal_entry_serivce import CreateJournalEntryService
+from vita.src.util.constant import SYSTEM_USER
 from vita.src.util.sql_model import SQLSession
 from vita.src.model.convert import GraphqlConvert
 
@@ -35,9 +36,9 @@ def test_create_journal_entry_service_case01(session: SQLSession):
         date=datetime.now().date(),
         status=StatusEnum.UNFIXED,
         create_date=datetime.now(),
-        create_object_id="system",
+        create_object_id=SYSTEM_USER,
         update_date=datetime.now(),
-        update_object_id="system",
+        update_object_id=SYSTEM_USER,
         delete_date=None,
         delete_object_id=None,
         inner_journal_entries=[inner_journal_entry],
