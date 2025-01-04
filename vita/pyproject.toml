@@ -32,3 +32,6 @@ pythonpath = "src"
 
 [tool.mypy]
 plugins = ["strawberry.ext.mypy_plugin"]
+
+[tool.poetry.scripts]
+run_with_path = "PYTHONPATH=/"

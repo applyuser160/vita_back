@@ -1,10 +1,15 @@
 from datetime import datetime
 import json
 from unittest.mock import Mock, patch
+
+from sqlmodel import select
+
 from vita.src.model.graphql_input import AccountGraphqlInput
 from vita.src.model.graphql_type import AccountGraphqlType
 from vita.src.model.model import Account, BsPlEnum, CreditDebitEnum, DeptEnum
 from vita.src.service.create_account_service import CreateAccountService
+from vita.src.util.constant import SYSTEM_USER
+from vita.src.util.dt import VitaDatetime
 from vita.src.util.sql_model import SQLSession
 
 
@@ -133,7 +138,7 @@ def test_create_account_service_case04(session: SQLSession):
     assert message_dict["location"] == ["credit_debit"]
 
 
-@patch("util.dt.VitaDatetime.now")
+@patch.object(VitaDatetime, "now")
 def test_create_account_service_case05(now: Mock, session: SQLSession):
     """
     テスト観点:
@@ -165,10 +170,28 @@ def test_create_account_service_case05(now: Mock, session: SQLSession):
     assert account.create_date
     assert account.create_date == datetime(2024, 1, 1, 9, 0, 0, 0)
     assert account.create_object_id
-    assert account.create_object_id == "system"
+    assert account.create_object_id == SYSTEM_USER
     assert account.update_date
     assert account.create_date == datetime(2024, 1, 1, 9, 0, 0, 0)
     assert account.update_object_id
-    assert account.update_object_id == "system"
+    assert account.update_object_id == SYSTEM_USER
     assert not account.delete_date
     assert not account.delete_object_id
+
+    record = session.execute(
+        select(Account).where(Account.id == account.id), Account, True
+    )
+    assert record
+    assert isinstance(record, Account)
+    assert account.id == record.id
+    assert account.name == record.name
+    assert account.description == record.description
+    assert account.dept == record.dept
+    assert account.bs_pl == record.bs_pl
+    assert account.credit_debit == record.credit_debit
+    assert account.create_date == record.create_date
+    assert account.create_object_id == record.create_object_id
+    assert account.update_date == record.update_date
+    assert account.update_object_id == record.update_object_id
+    assert account.delete_date == record.delete_date
+    assert account.delete_object_id == record.delete_object_id

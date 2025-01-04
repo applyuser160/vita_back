@@ -1,8 +1,8 @@
 from abc import ABC, abstractmethod
 from typing import Any
 
-from util.err import VitaError
-from util.sql_model import SQLSession
+from vita.src.util.err import VitaError
+from vita.src.util.sql_model import SQLSession
 
 
 class BaseService(ABC):

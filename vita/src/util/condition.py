@@ -2,6 +2,8 @@ from __future__ import annotations
 
 from enum import Enum
 from typing import Any
+from sqlmodel import col
+from sqlalchemy import BinaryExpression, Column
 
 
 class ConditionType(Enum):
@@ -13,41 +15,50 @@ class ConditionType(Enum):
     LESS = 5
     CONTAINS = 6
     LIKE = 7
-
-
-class ConditionRelationType(Enum):
-    AND = 0
-    OR = 1
+    IN = 8
 
 
 class Condition:
-    target: Any  # type: ignore
+    target: Column
     type: ConditionType
     value: Any  # type: ignore
     isnot: bool
 
-    def __init__(self, target: Any, type: ConditionType, value: Any, isnot: bool):
-        self.target = target
+    def __init__(
+        self, target: Column, type: ConditionType, value: Any, isnot: bool = False
+    ):
+        self.target = col(target)
         self.type = type
         self.value = value
         self.isnot = isnot
 
-    def to_sqlachemy(self):
-        if type == ConditionType.EQUAL:
-            result: bool = self.target == self.value  # type: ignore
-        elif type == ConditionType.NOT_EQUAL:
-            result = self.target != self.value
-        elif type == ConditionType.GREATER_THAN:
-            result = self.target >= self.value
-        elif type == ConditionType.GREATER:
-            result = self.target > self.value
-        elif type == ConditionType.LESS_THAN:
-            result = self.target <= self.value
-        elif type == ConditionType.LESS:
-            result = self.target < self.value
-        elif type == ConditionType.CONTAINS:
-            result = self.target.contains(self.value)
-        else:
-            result = self.target.like(f"%{self.value}%")
+    def to_sqlachemy(self) -> BinaryExpression:
+        match self.type:
+            case ConditionType.EQUAL:
+                result = (
+                    col(self.target).is_(self.value)
+                    if self.value is None
+                    else self.target == self.value
+                )
+            case ConditionType.NOT_EQUAL:
+                result = (
+                    col(self.target).is_not(self.value)
+                    if self.value is None
+                    else self.target != self.value
+                )
+            case ConditionType.GREATER_THAN:
+                result = self.target >= self.value
+            case ConditionType.GREATER:
+                result = self.target > self.value
+            case ConditionType.LESS_THAN:
+                result = self.target <= self.value
+            case ConditionType.LESS:
+                result = self.target < self.value
+            case ConditionType.CONTAINS:
+                result = self.target.contains(self.value)
+            case ConditionType.IN:
+                result = self.target.in_(self.value)
+            case _:
+                result = self.target.like(f"%{self.value}%")
 
         return not result if self.isnot else result

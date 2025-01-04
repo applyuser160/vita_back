@@ -7,9 +7,9 @@ create table IF not exists `account` (
     `id` VARCHAR(40) NOT NULL,
     `name` VARCHAR(100) NOT NULL, -- 勘定科目名
     `description` VARCHAR(500) NULL, -- 説明
-    `dept` INTEGER(4) NOT NULL, -- 分類(当座資産など)
-    `bs_pl` INTEGER(4) NOT NULL, -- 分類(BSかPL)
-    `credit_debit` INTEGER(4) NULL, -- 分類(借方か貸方)
+    `dept` VARCHAR(28) NOT NULL, -- 分類(当座資産など)
+    `bs_pl` VARCHAR(2) NOT NULL, -- 分類(BSかPL)
+    `credit_debit` VARCHAR(6) NULL, -- 分類(借方か貸方)
     `create_date` DATETIME NOT NULL,
     `create_object_id` VARCHAR(40) NOT NULL,
     `update_date` DATETIME NOT NULL,
@@ -30,7 +30,8 @@ create table IF not exists `sub_account` (
     `update_object_id` VARCHAR(40) NOT NULL,
     `delete_date` DATETIME NULL,
     `delete_object_id` VARCHAR(40) NULL,
-    PRIMARY KEY(`id`)
+    PRIMARY KEY(`id`),
+    FOREIGN KEY(`account_id`) REFERENCES `account` (`id`)
 ) DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 create table IF not exists `inner_journal_entry` (
@@ -47,7 +48,10 @@ create table IF not exists `inner_journal_entry` (
     `update_object_id` VARCHAR(40) NOT NULL,
     `delete_date` DATETIME NULL,
     `delete_object_id` VARCHAR(40) NULL,
-    PRIMARY KEY(`id`)
+    PRIMARY KEY(`id`),
+    FOREIGN KEY(`journal_entry_id`) REFERENCES `journal_entry` (`id`),
+    FOREIGN KEY(`account_id`) REFERENCES `account` (`id`),
+    FOREIGN KEY(`sub_account_id`) REFERENCES `sub_account` (`id`)
 ) DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
 
 create table IF not exists `journal_entry` (
@@ -55,7 +59,7 @@ create table IF not exists `journal_entry` (
     `name` VARCHAR(100) NULL, -- 仕訳名
     `description` VARCHAR(500) NULL, -- 説明
     `date` DATE NOT NULL, -- 日時
-    `status` INTEGER(4) NOT NULL, -- 状態
+    `status` VARCHAR(8) NOT NULL, -- 状態
     `create_date` DATETIME NOT NULL,
     `create_object_id` VARCHAR(40) NOT NULL,
     `update_date` DATETIME NOT NULL,

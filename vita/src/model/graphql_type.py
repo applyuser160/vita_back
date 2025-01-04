@@ -1,5 +1,13 @@
+from typing import TypeVar
 import strawberry
-from model.model import Account, InnerJournalEntry, JournalEntry, SubAccount
+from vita.src.model.model import (
+    Account,
+    Balance,
+    DailyBalance,
+    InnerJournalEntry,
+    JournalEntry,
+    SubAccount,
+)
 
 
 @strawberry.experimental.pydantic.type(model=Account, all_fields=True)
@@ -17,17 +25,37 @@ class InnerJournalEntryGraphqlType:
     pass
 
 
-@strawberry.experimental.pydantic.type(model=JournalEntry)
+@strawberry.experimental.pydantic.type(model=JournalEntry, all_fields=True)
 class JournalEntryGraphqlType:
-    id: strawberry.auto
-    name: strawberry.auto
-    description: strawberry.auto
-    date: strawberry.auto
-    status: strawberry.auto
-    create_date: strawberry.auto
-    create_object_id: strawberry.auto
-    update_date: strawberry.auto
-    update_object_id: strawberry.auto
-    delete_date: strawberry.auto
-    delete_object_id: strawberry.auto
-    inner_journal_entries: list[InnerJournalEntryGraphqlType]
+    pass
+
+
+@strawberry.experimental.pydantic.type(model=Balance, all_fields=True)
+class BalanceGraphqlType:
+    pass
+
+
+@strawberry.experimental.pydantic.type(model=DailyBalance, all_fields=True)
+class DailyBalanceGraphqlType:
+    pass
+
+
+Y = TypeVar(
+    "Y",
+    AccountGraphqlType,
+    SubAccountGraphqlType,
+    JournalEntryGraphqlType,
+    InnerJournalEntryGraphqlType,
+    BalanceGraphqlType,
+    DailyBalanceGraphqlType,
+)
+
+
+TypeUnion = (
+    AccountGraphqlType
+    | SubAccountGraphqlType
+    | JournalEntryGraphqlType
+    | InnerJournalEntryGraphqlType
+    | BalanceGraphqlType
+    | DailyBalanceGraphqlType
+)

@@ -1,9 +1,13 @@
 from datetime import datetime
 import json
 from unittest.mock import Mock, patch
+
+from sqlmodel import select
 from vita.src.model.graphql_input import AccountGraphqlInput
 from vita.src.model.model import Account, BsPlEnum, CreditDebitEnum, DeptEnum
 from vita.src.service.update_account_service import UpdateAccountService
+from vita.src.util.constant import SYSTEM_USER
+from vita.src.util.dt import VitaDatetime
 from vita.src.util.sql_model import SQLSession
 
 
@@ -20,7 +24,7 @@ def test_update_account_service_case01(session: SQLSession):
         bs_pl=BsPlEnum.BS,
         credit_debit=CreditDebitEnum.DEBIT,
     )
-    account: Account = session.save(Account, account, "system")
+    account: Account = session.save(Account, account, SYSTEM_USER)
 
     account.name = "0" * 101
     input = AccountGraphqlInput.from_pydantic(account)
@@ -45,7 +49,7 @@ def test_update_account_service_case02(session: SQLSession):
         bs_pl=BsPlEnum.BS,
         credit_debit=CreditDebitEnum.DEBIT,
     )
-    account: Account = session.save(Account, account, "system")
+    account: Account = session.save(Account, account, SYSTEM_USER)
 
     account.name = None
     input = AccountGraphqlInput.from_pydantic(account)
@@ -75,7 +79,7 @@ def test_update_account_service_case03(session: SQLSession):
         bs_pl=BsPlEnum.BS,
         credit_debit=CreditDebitEnum.DEBIT,
     )
-    account: Account = session.save(Account, account, "system")
+    account: Account = session.save(Account, account, SYSTEM_USER)
 
     account.description = "0" * 501
     input = AccountGraphqlInput.from_pydantic(account)
@@ -106,7 +110,7 @@ def test_update_account_service_case04(session: SQLSession):
         bs_pl=BsPlEnum.BS,
         credit_debit=CreditDebitEnum.DEBIT,
     )
-    account: Account = session.save(Account, account, "system")
+    account: Account = session.save(Account, account, SYSTEM_USER)
 
     account.dept = None
     account.bs_pl = None
@@ -141,7 +145,7 @@ def test_update_account_service_case04(session: SQLSession):
     assert message_dict["location"] == ["credit_debit"]
 
 
-@patch("util.dt.VitaDatetime.now")
+@patch.object(VitaDatetime, "now")
 def test_update_account_service_case05(now: Mock, session: SQLSession):
     """
     テスト観点:
@@ -157,7 +161,7 @@ def test_update_account_service_case05(now: Mock, session: SQLSession):
         bs_pl=BsPlEnum.BS,
         credit_debit=CreditDebitEnum.DEBIT,
     )
-    account: Account = session.save(Account, account, "system")
+    account: Account = session.save(Account, account, SYSTEM_USER)
 
     account.name = "new name"
     account.description = "new description"
@@ -180,10 +184,28 @@ def test_update_account_service_case05(now: Mock, session: SQLSession):
     assert account.create_date
     assert account.create_date == datetime(2024, 1, 1, 9, 0, 0, 0)
     assert account.create_object_id
-    assert account.create_object_id == "system"
+    assert account.create_object_id == SYSTEM_USER
     assert account.update_date
     assert account.create_date == datetime(2024, 1, 1, 9, 0, 0, 0)
     assert account.update_object_id
-    assert account.update_object_id == "system"
+    assert account.update_object_id == SYSTEM_USER
     assert not account.delete_date
     assert not account.delete_object_id
+
+    record = session.execute(
+        select(Account).where(Account.id == account.id), Account, True
+    )
+    assert record
+    assert isinstance(record, Account)
+    assert account.id == record.id
+    assert account.name == record.name
+    assert account.description == record.description
+    assert account.dept == record.dept
+    assert account.bs_pl == record.bs_pl
+    assert account.credit_debit == record.credit_debit
+    assert account.create_date == record.create_date
+    assert account.create_object_id == record.create_object_id
+    assert account.update_date == record.update_date
+    assert account.update_object_id == record.update_object_id
+    assert account.delete_date == record.delete_date
+    assert account.delete_object_id == record.delete_object_id
