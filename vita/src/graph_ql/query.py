@@ -1,14 +1,25 @@
 import strawberry
 from model.graphql_input import (
     AccountsGraphqlInput,
+    CollectJournalEntriesGraphqlInput,
     JournalEntriesGraphqlInput,
     SingleGraphqlInput,
     SubAccountsGraphqlInput,
 )
 from model.graphql_type import (
     AccountGraphqlType,
+    BalanceGraphqlType,
+    DailyBalanceGraphqlType,
+    InnerJournalEntryGraphqlType,
     JournalEntryGraphqlType,
     SubAccountGraphqlType,
+)
+from vita.src.service.calculate_balance_service import CalculateBalanceService
+from vita.src.service.calculate_daily_balance_service import (
+    CalculateDailyBalanceService,
+)
+from vita.src.service.collect_journal_entries_service import (
+    CollectJournalEntriesService,
 )
 from vita.src.service.get_account_service import GetAccountService
 from vita.src.service.get_accounts_service import GetAccountsService
@@ -60,3 +71,21 @@ class Query:
         self, input: JournalEntriesGraphqlInput
     ) -> list[JournalEntryGraphqlType] | VitaError:
         return GetJournalEntriesService(self.get_session()).execute(input)
+
+    @strawberry.field
+    def collect_journal_entries(
+        self, input: CollectJournalEntriesGraphqlInput
+    ) -> list[InnerJournalEntryGraphqlType] | VitaError:
+        return CollectJournalEntriesService(self.get_session()).execute(input)
+
+    @strawberry.field
+    def calculate_balance(
+        self, input: CollectJournalEntriesGraphqlInput
+    ) -> list[BalanceGraphqlType] | VitaError:
+        return CalculateBalanceService(self.get_session()).execute(input)
+
+    @strawberry.field
+    def calculate_daily_balance(
+        self, input: CollectJournalEntriesGraphqlInput
+    ) -> list[DailyBalanceGraphqlType] | VitaError:
+        return CalculateDailyBalanceService(self.get_session()).execute(input)

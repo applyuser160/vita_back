@@ -15,6 +15,7 @@ class ConditionType(Enum):
     LESS = 5
     CONTAINS = 6
     LIKE = 7
+    IN = 8
 
 
 class Condition:
@@ -51,6 +52,8 @@ class Condition:
                 result = self.target < self.value
             case ConditionType.CONTAINS:
                 result = self.target.contains(self.value)
+            case ConditionType.IN:
+                result = self.target.in_(self.value)
             case _:
                 result = self.target.like(f"%{self.value}%")
 

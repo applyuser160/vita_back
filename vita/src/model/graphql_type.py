@@ -1,6 +1,13 @@
 from typing import TypeVar
 import strawberry
-from vita.src.model.model import Account, InnerJournalEntry, JournalEntry, SubAccount
+from vita.src.model.model import (
+    Account,
+    Balance,
+    DailyBalance,
+    InnerJournalEntry,
+    JournalEntry,
+    SubAccount,
+)
 
 
 @strawberry.experimental.pydantic.type(model=Account, all_fields=True)
@@ -23,12 +30,24 @@ class JournalEntryGraphqlType:
     pass
 
 
+@strawberry.experimental.pydantic.type(model=Balance, all_fields=True)
+class BalanceGraphqlType:
+    pass
+
+
+@strawberry.experimental.pydantic.type(model=DailyBalance, all_fields=True)
+class DailyBalanceGraphqlType:
+    pass
+
+
 Y = TypeVar(
     "Y",
     AccountGraphqlType,
     SubAccountGraphqlType,
     JournalEntryGraphqlType,
     InnerJournalEntryGraphqlType,
+    BalanceGraphqlType,
+    DailyBalanceGraphqlType,
 )
 
 
@@ -37,4 +56,6 @@ TypeUnion = (
     | SubAccountGraphqlType
     | JournalEntryGraphqlType
     | InnerJournalEntryGraphqlType
+    | BalanceGraphqlType
+    | DailyBalanceGraphqlType
 )

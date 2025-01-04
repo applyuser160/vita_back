@@ -66,6 +66,14 @@ class JournalEntriesGraphqlInput:
     sub_account_id: str | None = None
 
 
+@strawberry.input
+class CollectJournalEntriesGraphqlInput:
+    account_ids: list[str] | None = None
+    sub_account_ids: list[str] | None = None
+    from_date: date | None = None
+    to_date: date | None = None
+
+
 I = TypeVar(
     "I",
     AccountGraphqlInput,

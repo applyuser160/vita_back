@@ -171,4 +171,19 @@ class InnerJournalEntry(Base, table=True):  # type: ignore
     )
 
 
-ModelUnion = Account | SubAccount | JournalEntry | InnerJournalEntry
+class Balance(Base):
+    account_id: str | None
+    sub_account_id: str | None
+    total_amount: int
+
+
+class DailyBalance(Base):
+    account_id: str | None
+    sub_account_id: str | None
+    date: date
+    total_amount: int
+
+
+ModelUnion = (
+    Account | SubAccount | JournalEntry | InnerJournalEntry | Balance | DailyBalance
+)
