@@ -19,7 +19,7 @@ class ConditionType(Enum):
 
 
 class Condition:
-    target: Column  # type: ignore
+    target: Column
     type: ConditionType
     value: Any  # type: ignore
     isnot: bool
@@ -35,7 +35,11 @@ class Condition:
     def to_sqlachemy(self) -> BinaryExpression:
         match self.type:
             case ConditionType.EQUAL:
-                result = col(self.target).is_(self.value) if self.value is None else self.target == self.value  # type: ignore
+                result = (
+                    col(self.target).is_(self.value)
+                    if self.value is None
+                    else self.target == self.value
+                )
             case ConditionType.NOT_EQUAL:
                 result = (
                     col(self.target).is_not(self.value)
