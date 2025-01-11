@@ -1,0 +1,237 @@
+input AccountGraphqlInput {
+  id: String = null
+  createDate: DateTime = null
+  createObjectId: String = null
+  updateDate: DateTime = null
+  updateObjectId: String = null
+  deleteDate: DateTime = null
+  deleteObjectId: String = null
+  name: String!
+  description: String = null
+  dept: DeptEnum!
+  bsPl: BsPlEnum!
+  creditDebit: CreditDebitEnum!
+}
+
+type AccountGraphqlType {
+  id: String
+  createDate: DateTime
+  createObjectId: String
+  updateDate: DateTime
+  updateObjectId: String
+  deleteDate: DateTime
+  deleteObjectId: String
+  name: String!
+  description: String
+  dept: DeptEnum!
+  bsPl: BsPlEnum!
+  creditDebit: CreditDebitEnum!
+}
+
+union AccountGraphqlTypeVitaError = AccountGraphqlType | VitaError
+
+input AccountsGraphqlInput {
+  name: String = null
+  description: String = null
+  dept: DeptEnum = null
+  bsPl: BsPlEnum = null
+  creditDebit: CreditDebitEnum = null
+}
+
+type BalanceGraphqlType {
+  id: String
+  createDate: DateTime
+  createObjectId: String
+  updateDate: DateTime
+  updateObjectId: String
+  deleteDate: DateTime
+  deleteObjectId: String
+  accountId: String
+  subAccountId: String
+  totalAmount: Int!
+}
+
+enum BsPlEnum {
+  BS
+  PL
+}
+
+input CollectJournalEntriesGraphqlInput {
+  accountIds: [String!] = null
+  subAccountIds: [String!] = null
+  fromDate: Date = null
+  toDate: Date = null
+}
+
+enum CreditDebitEnum {
+  CREDIT
+  DEBIT
+}
+
+type DailyBalanceGraphqlType {
+  id: String
+  createDate: DateTime
+  createObjectId: String
+  updateDate: DateTime
+  updateObjectId: String
+  deleteDate: DateTime
+  deleteObjectId: String
+  accountId: String
+  subAccountId: String
+  date: Date!
+  totalAmount: Int!
+}
+
+"""Date (isoformat)"""
+scalar Date
+
+"""Date with time (isoformat)"""
+scalar DateTime
+
+enum DeptEnum {
+  CURRENT_ASSETS
+  SALES_CLAIM
+  INVENTORY
+  OTHER_CURRENT_ASSETS
+  PROPERTY_PLANT_AND_EQUIPMENT
+  INTANGIBLE_ASSETS
+  DEFERRED_ASSETS
+  PURCHASE_DEBT
+  OTHER_CURRENT_LIABILITIES
+  FIXED_LIABILITY
+  SALES
+  SALES_MANAGEMENT_EXPENSES
+  NON_OPERATING_INCOME
+  NON_OPERATING_EXPENSES
+  EXTRA_ORDINARY_GAINS
+  EXTRAORDINARY_LOSSES
+}
+
+type InnerJournalEntryGraphqlType {
+  id: String
+  createDate: DateTime
+  createObjectId: String
+  updateDate: DateTime
+  updateObjectId: String
+  deleteDate: DateTime
+  deleteObjectId: String
+  journalEntryId: String!
+  accountId: String!
+  subAccountId: String!
+  amount: Int!
+  creditDebit: CreditDebitEnum!
+  index: Int
+}
+
+input JournalEntriesGraphqlInput {
+  name: String = null
+  description: String = null
+  fromDate: Date = null
+  toDate: Date = null
+  status: StatusEnum = null
+  accountId: String = null
+  subAccountId: String = null
+}
+
+input JournalEntryGraphqlInput {
+  id: String = null
+  createDate: DateTime = null
+  createObjectId: String = null
+  updateDate: DateTime = null
+  updateObjectId: String = null
+  deleteDate: DateTime = null
+  deleteObjectId: String = null
+  name: String = null
+  description: String = null
+  date: Date!
+  status: StatusEnum!
+}
+
+type JournalEntryGraphqlType {
+  id: String
+  createDate: DateTime
+  createObjectId: String
+  updateDate: DateTime
+  updateObjectId: String
+  deleteDate: DateTime
+  deleteObjectId: String
+  name: String
+  description: String
+  date: Date!
+  status: StatusEnum!
+}
+
+union JournalEntryGraphqlTypeVitaError = JournalEntryGraphqlType | VitaError
+
+type Mutation {
+  createAccount(input: AccountGraphqlInput!): AccountGraphqlTypeVitaError!
+  updateAccount(input: AccountGraphqlInput!): AccountGraphqlTypeVitaError!
+  deleteAccount(input: AccountGraphqlInput!): AccountGraphqlTypeVitaError!
+  createSubAccount(input: SubAccountGraphqlInput!): SubAccountGraphqlTypeVitaError!
+  updateSubAccount(input: SubAccountGraphqlInput!): SubAccountGraphqlTypeVitaError!
+  deleteSubAccount(input: SubAccountGraphqlInput!): SubAccountGraphqlTypeVitaError!
+  createJournalEntry(input: JournalEntryGraphqlInput!): JournalEntryGraphqlTypeVitaError!
+  updateJournalEntry(input: JournalEntryGraphqlInput!): JournalEntryGraphqlTypeVitaError!
+  deleteJournalEntry(input: JournalEntryGraphqlInput!): JournalEntryGraphqlTypeVitaError!
+}
+
+type Query {
+  account(input: SingleGraphqlInput!): AccountGraphqlTypeVitaError!
+  accounts(input: AccountsGraphqlInput!): [AccountGraphqlType!]!
+  subAccount(input: SingleGraphqlInput!): SubAccountGraphqlTypeVitaError!
+  subAccounts(input: SubAccountsGraphqlInput!): [SubAccountGraphqlType!]!
+  journalEntry(input: SingleGraphqlInput!): JournalEntryGraphqlTypeVitaError!
+  journalEntries(input: JournalEntriesGraphqlInput!): [JournalEntryGraphqlType!]!
+  collectJournalEntries(input: CollectJournalEntriesGraphqlInput!): [InnerJournalEntryGraphqlType!]!
+  calculateBalance(input: CollectJournalEntriesGraphqlInput!): [BalanceGraphqlType!]!
+  calculateDailyBalance(input: CollectJournalEntriesGraphqlInput!): [DailyBalanceGraphqlType!]!
+}
+
+input SingleGraphqlInput {
+  id: String!
+}
+
+enum StatusEnum {
+  UNFIXED
+  FIXED
+  RESOLVED
+}
+
+input SubAccountGraphqlInput {
+  id: String = null
+  createDate: DateTime = null
+  createObjectId: String = null
+  updateDate: DateTime = null
+  updateObjectId: String = null
+  deleteDate: DateTime = null
+  deleteObjectId: String = null
+  name: String!
+  accountId: String!
+  description: String = null
+}
+
+type SubAccountGraphqlType {
+  id: String
+  createDate: DateTime
+  createObjectId: String
+  updateDate: DateTime
+  updateObjectId: String
+  deleteDate: DateTime
+  deleteObjectId: String
+  name: String!
+  accountId: String!
+  description: String
+}
+
+union SubAccountGraphqlTypeVitaError = SubAccountGraphqlType | VitaError
+
+input SubAccountsGraphqlInput {
+  name: String = null
+  accountId: String = null
+  description: String = null
+}
+
+type VitaError {
+  errorCode: Int!
+  message: String!
+}
