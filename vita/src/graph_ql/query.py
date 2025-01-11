@@ -1,12 +1,12 @@
 import strawberry
-from model.graphql_input import (
+from vita.src.model.graphql_input import (
     AccountsGraphqlInput,
     CollectJournalEntriesGraphqlInput,
     JournalEntriesGraphqlInput,
     SingleGraphqlInput,
     SubAccountsGraphqlInput,
 )
-from model.graphql_type import (
+from vita.src.model.graphql_type import (
     AccountGraphqlType,
     BalanceGraphqlType,
     DailyBalanceGraphqlType,
@@ -35,57 +35,56 @@ from vita.src.util.sql_model import SQLSession
 @strawberry.type
 class Query:
 
-    def get_session(self):
+    @classmethod
+    def get_session(self) -> SQLSession:
         return SQLSession(Logg())
 
     @strawberry.field
     def account(self, input: SingleGraphqlInput) -> AccountGraphqlType | VitaError:
-        return GetAccountService(self.get_session()).execute(input)
+        return GetAccountService(Query.get_session()).execute(input)
 
     @strawberry.field
-    def accounts(
-        self, input: AccountsGraphqlInput
-    ) -> list[AccountGraphqlType] | VitaError:
-        return GetAccountsService(self.get_session()).execute(input)
+    def accounts(self, input: AccountsGraphqlInput) -> list[AccountGraphqlType]:
+        return GetAccountsService(Query.get_session()).execute(input)
 
     @strawberry.field
     def sub_account(
         self, input: SingleGraphqlInput
     ) -> SubAccountGraphqlType | VitaError:
-        return GetSubAccountService(self.get_session()).execute(input)
+        return GetSubAccountService(Query.get_session()).execute(input)
 
     @strawberry.field
     def sub_accounts(
         self, input: SubAccountsGraphqlInput
-    ) -> list[SubAccountGraphqlType] | VitaError:
-        return GetSubAccountsService(self.get_session()).execute(input)
+    ) -> list[SubAccountGraphqlType]:
+        return GetSubAccountsService(Query.get_session()).execute(input)
 
     @strawberry.field
     def journal_entry(
         self, input: SingleGraphqlInput
     ) -> JournalEntryGraphqlType | VitaError:
-        return GetJournalEntryService(self.get_session()).execute(input)
+        return GetJournalEntryService(Query.get_session()).execute(input)
 
     @strawberry.field
     def journal_entries(
         self, input: JournalEntriesGraphqlInput
-    ) -> list[JournalEntryGraphqlType] | VitaError:
-        return GetJournalEntriesService(self.get_session()).execute(input)
+    ) -> list[JournalEntryGraphqlType]:
+        return GetJournalEntriesService(Query.get_session()).execute(input)
 
     @strawberry.field
     def collect_journal_entries(
         self, input: CollectJournalEntriesGraphqlInput
-    ) -> list[InnerJournalEntryGraphqlType] | VitaError:
-        return CollectJournalEntriesService(self.get_session()).execute(input)
+    ) -> list[InnerJournalEntryGraphqlType]:
+        return CollectJournalEntriesService(Query.get_session()).execute(input)
 
     @strawberry.field
     def calculate_balance(
         self, input: CollectJournalEntriesGraphqlInput
-    ) -> list[BalanceGraphqlType] | VitaError:
-        return CalculateBalanceService(self.get_session()).execute(input)
+    ) -> list[BalanceGraphqlType]:
+        return CalculateBalanceService(Query.get_session()).execute(input)
 
     @strawberry.field
     def calculate_daily_balance(
         self, input: CollectJournalEntriesGraphqlInput
-    ) -> list[DailyBalanceGraphqlType] | VitaError:
-        return CalculateDailyBalanceService(self.get_session()).execute(input)
+    ) -> list[DailyBalanceGraphqlType]:
+        return CalculateDailyBalanceService(Query.get_session()).execute(input)

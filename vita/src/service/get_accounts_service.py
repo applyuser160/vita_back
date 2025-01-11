@@ -7,7 +7,6 @@ from vita.src.model.convert import GraphqlConvert
 from vita.src.model.graphql_input import AccountsGraphqlInput
 from vita.src.model.graphql_type import AccountGraphqlType
 from vita.src.model.model import Account
-from vita.src.util.err import VitaError
 from vita.src.util.sql_model import SQLSession
 from vita.src.util.condition import Condition, ConditionType
 
@@ -20,9 +19,7 @@ class GetAccountsService(BaseService):
         super().__init__(session)
 
     @override
-    def execute(
-        self, input: AccountsGraphqlInput
-    ) -> list[AccountGraphqlType] | VitaError:
+    def execute(self, input: AccountsGraphqlInput) -> list[AccountGraphqlType]:
         conditions = []
         if input.name:
             cond = Condition(Account.name, ConditionType.LIKE, input.name)
@@ -52,7 +49,7 @@ class GetAccountsService(BaseService):
         accounts = self.session.execute(query, Account, False, True)
 
         if not accounts:
-            return VitaError(400, "Account not found")
+            return []
 
         return [
             GraphqlConvert.model_to_type(AccountGraphqlType, account)
