@@ -1,10 +1,10 @@
 import strawberry
-from model.graphql_input import (
+from vita.src.model.graphql_input import (
     AccountGraphqlInput,
     JournalEntryGraphqlInput,
     SubAccountGraphqlInput,
 )
-from model.graphql_type import (
+from vita.src.model.graphql_type import (
     AccountGraphqlType,
     JournalEntryGraphqlType,
     SubAccountGraphqlType,
@@ -26,6 +26,7 @@ from vita.src.util.logg import Logg
 @strawberry.type
 class Mutation:
 
+    @classmethod
     def get_session(self):
         return SQLSession(Logg())
 
@@ -33,52 +34,52 @@ class Mutation:
     def create_account(
         self, input: AccountGraphqlInput
     ) -> AccountGraphqlType | VitaError:
-        return CreateAccountService(self.get_session()).execute(input)
+        return CreateAccountService(Mutation.get_session()).execute(input)
 
     @strawberry.mutation
     def update_account(
         self, input: AccountGraphqlInput
     ) -> AccountGraphqlType | VitaError:
-        return UpdateAccountService(self.get_session()).execute(input)
+        return UpdateAccountService(Mutation.get_session()).execute(input)
 
     @strawberry.mutation
     def delete_account(
         self, input: AccountGraphqlInput
     ) -> AccountGraphqlType | VitaError:
-        return DeleteAccountService(self.get_session()).execute(input)
+        return DeleteAccountService(Mutation.get_session()).execute(input)
 
     @strawberry.mutation
     def create_sub_account(
         self, input: SubAccountGraphqlInput
     ) -> SubAccountGraphqlType | VitaError:
-        return CreateSubAccountService(self.get_session()).execute(input)
+        return CreateSubAccountService(Mutation.get_session()).execute(input)
 
     @strawberry.mutation
     def update_sub_account(
         self, input: SubAccountGraphqlInput
     ) -> SubAccountGraphqlType | VitaError:
-        return UpdateSubAccountService(self.get_session()).execute(input)
+        return UpdateSubAccountService(Mutation.get_session()).execute(input)
 
     @strawberry.mutation
     def delete_sub_account(
         self, input: SubAccountGraphqlInput
     ) -> SubAccountGraphqlType | VitaError:
-        return DeleteSubAccountService(self.get_session()).execute(input)
+        return DeleteSubAccountService(Mutation.get_session()).execute(input)
 
     @strawberry.mutation
     def create_journal_entry(
         self, input: JournalEntryGraphqlInput
     ) -> JournalEntryGraphqlType | VitaError:
-        return CreateJournalEntryService(self.get_session()).execute(input)
+        return CreateJournalEntryService(Mutation.get_session()).execute(input)
 
     @strawberry.mutation
     def update_journal_entry(
         self, input: JournalEntryGraphqlInput
     ) -> JournalEntryGraphqlType | VitaError:
-        return UpdateJournalEntryService(self.get_session()).execute(input)
+        return UpdateJournalEntryService(Mutation.get_session()).execute(input)
 
     @strawberry.mutation
     def delete_journal_entry(
         self, input: JournalEntryGraphqlInput
     ) -> JournalEntryGraphqlType | VitaError:
-        return DeleteJournalEntryService(self.get_session()).execute(input)
+        return DeleteJournalEntryService(Mutation.get_session()).execute(input)

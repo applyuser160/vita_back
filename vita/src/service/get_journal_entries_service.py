@@ -8,7 +8,6 @@ from vita.src.model.graphql_input import JournalEntriesGraphqlInput
 from vita.src.model.graphql_type import JournalEntryGraphqlType
 from vita.src.model.model import JournalEntry, InnerJournalEntry
 from vita.src.util.condition import Condition, ConditionType
-from vita.src.util.err import VitaError
 from vita.src.util.sql_model import SQLSession
 
 from .base_service import BaseService
@@ -22,7 +21,7 @@ class GetJournalEntriesService(BaseService):
     @override
     def execute(
         self, input: JournalEntriesGraphqlInput
-    ) -> list[JournalEntryGraphqlType] | VitaError:
+    ) -> list[JournalEntryGraphqlType]:
         conditions = []
         inner_conditions = []
 
@@ -82,7 +81,7 @@ class GetJournalEntriesService(BaseService):
         journal_entries = self.session.execute(query, JournalEntry, False, True)
 
         if not journal_entries:
-            return VitaError(400, "Journal entry not found")
+            return []
 
         return [
             GraphqlConvert.model_to_type(JournalEntryGraphqlType, journal_entry)

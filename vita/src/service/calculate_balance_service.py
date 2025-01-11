@@ -7,7 +7,6 @@ from vita.src.model.graphql_input import CollectJournalEntriesGraphqlInput
 from vita.src.model.graphql_type import BalanceGraphqlType
 from vita.src.model.model import Balance, JournalEntry, InnerJournalEntry
 from vita.src.util.condition import Condition, ConditionType
-from vita.src.util.err import VitaError
 from vita.src.util.sql_model import SQLSession
 
 from .base_service import BaseService
@@ -21,7 +20,7 @@ class CalculateBalanceService(BaseService):
     @override
     def execute(
         self, input: CollectJournalEntriesGraphqlInput
-    ) -> list[BalanceGraphqlType] | VitaError:
+    ) -> list[BalanceGraphqlType]:
         account_conditions = []
         sub_account_conditions = []
 
@@ -104,7 +103,7 @@ class CalculateBalanceService(BaseService):
             )
 
         if not balances:
-            return VitaError(400, "Balance not found")
+            return []
 
         return [
             GraphqlConvert.model_to_type(BalanceGraphqlType, balance)
