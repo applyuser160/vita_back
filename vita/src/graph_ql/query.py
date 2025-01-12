@@ -13,6 +13,7 @@ from vita.src.model.graphql_type import (
     InnerJournalEntryGraphqlType,
     JournalEntryGraphqlType,
     SubAccountGraphqlType,
+    VitaErrorGraphqlType,
 )
 from vita.src.service.calculate_balance_service import CalculateBalanceService
 from vita.src.service.calculate_daily_balance_service import (
@@ -27,7 +28,6 @@ from vita.src.service.get_journal_entries_service import GetJournalEntriesServic
 from vita.src.service.get_journal_entry_service import GetJournalEntryService
 from vita.src.service.get_sub_account_service import GetSubAccountService
 from vita.src.service.get_sub_accounts_service import GetSubAccountsService
-from vita.src.util.err import VitaError
 from vita.src.util.logg import Logg
 from vita.src.util.sql_model import SQLSession
 
@@ -40,7 +40,9 @@ class Query:
         return SQLSession(Logg())
 
     @strawberry.field
-    def account(self, input: SingleGraphqlInput) -> AccountGraphqlType | VitaError:
+    def account(
+        self, input: SingleGraphqlInput
+    ) -> AccountGraphqlType | VitaErrorGraphqlType:
         return GetAccountService(Query.get_session()).execute(input)
 
     @strawberry.field
@@ -50,7 +52,7 @@ class Query:
     @strawberry.field
     def sub_account(
         self, input: SingleGraphqlInput
-    ) -> SubAccountGraphqlType | VitaError:
+    ) -> SubAccountGraphqlType | VitaErrorGraphqlType:
         return GetSubAccountService(Query.get_session()).execute(input)
 
     @strawberry.field
@@ -62,7 +64,7 @@ class Query:
     @strawberry.field
     def journal_entry(
         self, input: SingleGraphqlInput
-    ) -> JournalEntryGraphqlType | VitaError:
+    ) -> JournalEntryGraphqlType | VitaErrorGraphqlType:
         return GetJournalEntryService(Query.get_session()).execute(input)
 
     @strawberry.field

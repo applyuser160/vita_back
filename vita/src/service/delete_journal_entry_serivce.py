@@ -2,7 +2,7 @@ from typing import override
 
 from vita.src.model.convert import GraphqlConvert
 from vita.src.model.graphql_input import JournalEntryGraphqlInput
-from vita.src.model.graphql_type import JournalEntryGraphqlType
+from vita.src.model.graphql_type import JournalEntryGraphqlType, VitaErrorGraphqlType
 from vita.src.model.model import InnerJournalEntry, JournalEntry
 from vita.src.util.constant import SYSTEM_USER
 from vita.src.util.err import VitaError
@@ -19,7 +19,7 @@ class DeleteJournalEntryService(BaseService):
     @override
     def execute(
         self, input: JournalEntryGraphqlInput
-    ) -> JournalEntryGraphqlType | VitaError:
+    ) -> JournalEntryGraphqlType | VitaErrorGraphqlType:
 
         journal_entry = GraphqlConvert.input_to_model(JournalEntry, input)
 
@@ -33,7 +33,9 @@ class DeleteJournalEntryService(BaseService):
                 JournalEntry, journal_entry, SYSTEM_USER
             )
             if not result or not result.id:
-                return VitaError(500, "Failed to create journal entry")
+                return VitaErrorGraphqlType(
+                    error_code=500, message="Failed to create journal entry"
+                )
 
             inner_result = [
                 self.session.logical_delete(
@@ -42,10 +44,12 @@ class DeleteJournalEntryService(BaseService):
                 for inner_journal_entry in inner_journal_entries
             ]
         except VitaError as e:
-            return e
+            return VitaErrorGraphqlType(error_code=e.error_code, message=e.message)
 
         result.inner_journal_entries = [i for i in inner_result if i]
         if not result:
-            return VitaError(500, "Failed to create journal entry")
+            return VitaErrorGraphqlType(
+                error_code=500, message="Failed to create journal entry"
+            )
 
         return GraphqlConvert.model_to_type(JournalEntryGraphqlType, result)

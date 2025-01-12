@@ -1,7 +1,7 @@
 from typing import override
 
 from vita.src.model.graphql_input import SubAccountGraphqlInput
-from vita.src.model.graphql_type import SubAccountGraphqlType
+from vita.src.model.graphql_type import SubAccountGraphqlType, VitaErrorGraphqlType
 from vita.src.model.model import SubAccount
 from vita.src.util.constant import SYSTEM_USER
 from vita.src.util.err import VitaError
@@ -18,13 +18,13 @@ class UpdateSubAccountService(BaseService):
     @override
     def execute(
         self, input: SubAccountGraphqlInput
-    ) -> SubAccountGraphqlType | VitaError:
+    ) -> SubAccountGraphqlType | VitaErrorGraphqlType:
 
         sub_account = input.to_pydantic()  # type: ignore
 
         try:
             result = self.session.save(SubAccount, sub_account, SYSTEM_USER)
         except VitaError as e:
-            return e
+            return VitaErrorGraphqlType(error_code=e.error_code, message=e.message)
 
         return SubAccountGraphqlType.from_pydantic(result)  # type: ignore

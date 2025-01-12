@@ -4,7 +4,7 @@ from unittest.mock import Mock, patch
 
 from sqlmodel import select
 from vita.src.model.graphql_input import SubAccountGraphqlInput
-from vita.src.model.graphql_type import SubAccountGraphqlType
+from vita.src.model.graphql_type import SubAccountGraphqlType, VitaErrorGraphqlType
 from vita.src.model.model import SubAccount
 from vita.src.service.update_sub_account_service import UpdateSubAccountService
 from vita.src.util.constant import SYSTEM_USER
@@ -31,7 +31,7 @@ def test_update_sub_account_service_case01(session: SQLSession):
     service = UpdateSubAccountService(session)
     result = service.execute(input)
 
-    assert issubclass(type(result), Exception)
+    assert isinstance(result, VitaErrorGraphqlType)
     assert result.error_code == 400
     message_dict = json.loads(result.message)[0]
     assert message_dict["title"] == "validation error"
@@ -59,7 +59,7 @@ def test_update_account_service_case02(session: SQLSession):
     service = UpdateSubAccountService(session)
     result = service.execute(input)
 
-    assert issubclass(type(result), Exception)
+    assert isinstance(result, VitaErrorGraphqlType)
     assert result.error_code == 400
     message_dict = json.loads(result.message)[0]
     assert message_dict["title"] == "validation error"
@@ -87,7 +87,7 @@ def test_update_account_service_case03(session: SQLSession):
     service = UpdateSubAccountService(session)
     result = service.execute(input)
 
-    assert issubclass(type(result), Exception)
+    assert isinstance(result, VitaErrorGraphqlType)
     assert result.error_code == 400
     message_dict = json.loads(result.message)[0]
     assert message_dict["title"] == "validation error"

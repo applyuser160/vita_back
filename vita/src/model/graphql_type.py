@@ -59,3 +59,9 @@ TypeUnion = (
     | BalanceGraphqlType
     | DailyBalanceGraphqlType
 )
+
+
+@strawberry.type
+class VitaErrorGraphqlType:
+    error_code: int
+    message: str
