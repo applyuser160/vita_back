@@ -25,3 +25,9 @@ export PYTHONPATH="{プロジェクトの絶対パス}"
 ``` bash
 poetry run strawberry export-schema vita.src.main:schema > schema.graphql
 ```
+
+## strawberryでのgraphqlサーバーの起動
+
+``` bash
+poetry run strawberry server src.main
+```
