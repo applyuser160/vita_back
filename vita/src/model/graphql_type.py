@@ -10,14 +10,36 @@ from vita.src.model.model import (
 )
 
 
-@strawberry.experimental.pydantic.type(model=Account, all_fields=True)
+@strawberry.experimental.pydantic.type(model=Account)
 class AccountGraphqlType:
-    pass
+    id: strawberry.auto
+    create_date: strawberry.auto
+    create_object_id: strawberry.auto
+    update_date: strawberry.auto
+    update_object_id: strawberry.auto
+    delete_date: strawberry.auto
+    delete_object_id: strawberry.auto
+    name: strawberry.auto
+    description: strawberry.auto
+    dept: strawberry.auto
+    bs_pl: strawberry.auto
+    credit_debit: strawberry.auto
+    sub_accounts: list["SubAccountGraphqlType"]
 
 
-@strawberry.experimental.pydantic.type(model=SubAccount, all_fields=True)
+@strawberry.experimental.pydantic.type(model=SubAccount)
 class SubAccountGraphqlType:
-    pass
+    id: strawberry.auto
+    create_date: strawberry.auto
+    create_object_id: strawberry.auto
+    update_date: strawberry.auto
+    update_object_id: strawberry.auto
+    delete_date: strawberry.auto
+    delete_object_id: strawberry.auto
+    name: strawberry.auto
+    account_id: strawberry.auto
+    description: strawberry.auto
+    account: AccountGraphqlType
 
 
 @strawberry.experimental.pydantic.type(model=InnerJournalEntry, all_fields=True)
@@ -25,9 +47,20 @@ class InnerJournalEntryGraphqlType:
     pass
 
 
-@strawberry.experimental.pydantic.type(model=JournalEntry, all_fields=True)
+@strawberry.experimental.pydantic.type(model=JournalEntry)
 class JournalEntryGraphqlType:
-    pass
+    id: strawberry.auto
+    create_date: strawberry.auto
+    create_object_id: strawberry.auto
+    update_date: strawberry.auto
+    update_object_id: strawberry.auto
+    delete_date: strawberry.auto
+    delete_object_id: strawberry.auto
+    name: strawberry.auto
+    description: strawberry.auto
+    date: strawberry.auto
+    status: strawberry.auto
+    inner_journal_entries: list[InnerJournalEntryGraphqlType]
 
 
 @strawberry.experimental.pydantic.type(model=Balance, all_fields=True)
