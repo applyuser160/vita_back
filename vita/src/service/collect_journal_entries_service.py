@@ -42,7 +42,7 @@ class CollectJournalEntriesService(BaseService):
 
         if input.from_date:
             cond = Condition(
-                JournalEntry.date,
+                JournalEntry.target_date,
                 ConditionType.GREATER_THAN,
                 input.from_date,
             )
@@ -50,7 +50,7 @@ class CollectJournalEntriesService(BaseService):
 
         if input.to_date:
             cond = Condition(
-                JournalEntry.date,
+                JournalEntry.target_date,
                 ConditionType.LESS_THAN,
                 input.to_date,
             )

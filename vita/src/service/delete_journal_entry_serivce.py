@@ -21,12 +21,15 @@ class DeleteJournalEntryService(BaseService):
         self, input: JournalEntryGraphqlInput
     ) -> JournalEntryGraphqlType | VitaErrorGraphqlType:
 
-        journal_entry = GraphqlConvert.input_to_model(JournalEntry, input)
+        model = GraphqlConvert.input_to_model(JournalEntry, input)
 
-        inner_journal_entries = GraphqlConvert.copy_models(
-            journal_entry.inner_journal_entries
-        )
-        journal_entry = GraphqlConvert.copy_model(journal_entry)
+        if model.inner_journal_entries:
+            inner_journal_entries = GraphqlConvert.copy_models(
+                model.inner_journal_entries
+            )
+        else:
+            inner_journal_entries = []
+        journal_entry = GraphqlConvert.copy_model(model)
 
         try:
             result = self.session.logical_delete(

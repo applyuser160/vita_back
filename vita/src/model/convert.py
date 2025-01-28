@@ -1,5 +1,8 @@
 from vita.src.model.model import (
     Account,
+    Balance,
+    DailyBalance,
+    InnerJournalEntry,
     JournalEntry,
     SubAccount,
     ModelUnion,
@@ -16,11 +19,24 @@ from vita.src.model.graphql_input import (
 from vita.src.model.graphql_type import (
     Y,
     AccountGraphqlType,
+    BalanceGraphqlType,
+    DailyBalanceGraphqlType,
     InnerJournalEntryGraphqlType,
     JournalEntryGraphqlType,
     SubAccountGraphqlType,
     TypeUnion,
 )
+
+
+class AttributeInfo:
+    name: str
+    is_relatinship: bool
+    use_list: bool
+
+    def __init__(self, name: str, is_relatinship: bool, use_list: bool):
+        self.name = name
+        self.is_relatinship = is_relatinship
+        self.use_list = use_list
 
 
 class GraphqlConvert:
@@ -44,8 +60,43 @@ class GraphqlConvert:
             return SubAccountGraphqlType
         elif isinstance(model, JournalEntry):
             return JournalEntryGraphqlType
-        else:
+        elif isinstance(model, InnerJournalEntry):
             return InnerJournalEntryGraphqlType
+        elif isinstance(model, Balance):
+            return BalanceGraphqlType
+        else:
+            return DailyBalanceGraphqlType
+
+    @classmethod
+    def get_model(
+        cls,
+        input: InputUnion | None = None,
+        type: TypeUnion | None = None,
+    ) -> type[T]:
+        if input:
+            if isinstance(input, AccountGraphqlInput):
+                return Account
+            elif isinstance(input, SubAccountGraphqlInput):
+                return SubAccount
+            elif isinstance(input, JournalEntryGraphqlInput):
+                return JournalEntry
+            else:
+                return InnerJournalEntry
+        elif type:
+            if isinstance(type, AccountGraphqlType):
+                return Account
+            elif isinstance(type, SubAccountGraphqlType):
+                return SubAccount
+            elif isinstance(type, JournalEntryGraphqlType):
+                return JournalEntry
+            elif isinstance(type, InnerJournalEntryGraphqlType):
+                return InnerJournalEntry
+            elif isinstance(type, BalanceGraphqlType):
+                return Balance
+            else:
+                return DailyBalance
+        else:
+            raise ValueError("input and type are none.")
 
     @classmethod
     def copy_models(cls, models: list[T]) -> list[T]:
@@ -71,81 +122,117 @@ class GraphqlConvert:
         )
 
     @classmethod
+    def get_graphql_to_dict(cls, graphql_obj: InputUnion | TypeUnion) -> dict:
+        return {
+            k: v
+            for k, v in vars(graphql_obj).items()
+            if not k.startswith("_") and k not in ["model_config"]
+        }
+
+    @classmethod
+    def get_relationship_type(cls, model: type[T], field_name: str) -> type[T]:
+        field = model.model_fields[field_name]
+        if field.annotation.__origin__ == list:
+            return field.annotation.__args__[0]
+        return field.annotation
+
+    @classmethod
     def input_to_model(cls, model: type[T], input: I) -> T:
-        keys = [
-            key
-            for key in vars(input).keys()
-            if not key.startswith("_") and key not in ["model_config"]
+        columns, relatinships, uselists = model().get_columns_and_relationships()
+        attributes: list[AttributeInfo] = [
+            *[
+                AttributeInfo(name=i, is_relatinship=False, use_list=False)
+                for i in columns  # type: ignore
+            ],
+            *[
+                AttributeInfo(name=relationship, is_relatinship=True, use_list=uselist)
+                for relationship, uselist in zip(relatinships, uselists)  # type: ignore
+            ],
         ]
 
         attrs: dict = {}
-        for key in keys:
+        for attribute in attributes:
             try:
-                value = input.__getattribute__(key)
+                value = input.__getattribute__(attribute.name)
             except AttributeError:
-                continue
+                value = None
 
-            if isinstance(value, list):
-                value = [
-                    inner._pydantic_type(
-                        **{
-                            k: v
-                            for k, v in inner.to_pydantic().model_dump().items()
-                            if k in inner.to_pydantic().model_fields.keys() and v
-                        }
+            if attribute.use_list:
+                if isinstance(value, list):
+                    value = [
+                        cls.get_model(input=inner)(  # type: ignore
+                            **{
+                                k: v
+                                for k, v in cls.get_graphql_to_dict(inner).items()
+                                if v
+                            }
+                        )
+                        for inner in value
+                    ]
+                else:
+                    value = []
+            elif attribute.is_relatinship:
+                if isinstance(value, InputUnion):
+                    value = cls.get_model(input=value)(  # type: ignore
+                        **{k: v for k, v in cls.get_graphql_to_dict(value).items() if v}
                     )
-                    for inner in value
-                ]
-            elif isinstance(value, InputUnion):
-                value = value._pydantic_type(  # type: ignore
-                    **{
-                        k: v
-                        for k, v in value.to_pydantic().model_dump().items()  # type: ignore
-                        if k in value.to_pydantic().model_fields.keys() and v  # type: ignore
-                    }
-                )
+                else:
+                    value = None
 
-            attrs[key] = value
+            attrs[attribute.name] = value
 
         return model(**attrs)
 
     @classmethod
     def type_to_model(cls, model: type[T], type: Y) -> T:
-        keys = [
-            key
-            for key in vars(type).keys()
-            if not key.startswith("_") and key not in ["model_config"]
+        print("SEC1")
+        columns, relatinships, uselists = model().get_columns_and_relationships()
+        print("SEC2")
+        attributes: list[AttributeInfo] = [
+            *[
+                AttributeInfo(name=i, is_relatinship=False, use_list=False)
+                for i in columns  # type: ignore
+            ],
+            *[
+                AttributeInfo(name=relationship, is_relatinship=True, use_list=uselist)
+                for relationship, uselist in zip(relatinships, uselists)  # type: ignore
+            ],
         ]
 
         attrs: dict = {}
-        for key in keys:
+        for attribute in attributes:
             try:
-                value = type.__getattribute__(key)
+                value = type.__getattribute__(attribute.name)
             except AttributeError:
-                continue
+                value = None
 
-            if isinstance(value, list):
-                value = [
-                    inner._pydantic_type(
-                        **{
-                            k: v
-                            for k, v in inner.to_pydantic().model_dump().items()
-                            if k in inner.to_pydantic().model_fields.keys() and v
-                        }
+            print(f"attr: {attribute.name}, value: {value}")
+
+            if attribute.use_list:
+                if isinstance(value, list):
+                    value = [
+                        cls.get_model(type=inner)(  # type: ignore
+                            **{
+                                k: v
+                                for k, v in cls.get_graphql_to_dict(inner).items()
+                                if v
+                            }
+                        )
+                        for inner in value
+                    ]
+                else:
+                    value = []
+            elif attribute.is_relatinship:
+                if isinstance(value, TypeUnion):
+                    value = cls.get_model(type=value)(  # type: ignore
+                        **{k: v for k, v in cls.get_graphql_to_dict(value).items() if v}
                     )
-                    for inner in value
-                ]
-            elif isinstance(value, TypeUnion):
-                value = value._pydantic_type(  # type: ignore
-                    **{
-                        k: v
-                        for k, v in value.to_pydantic().model_dump().items()  # type: ignore
-                        if k in value.to_pydantic().model_fields.keys() and v  # type: ignore
-                    }
-                )
+                else:
+                    value = None
 
-            attrs[key] = value
+            attrs[attribute.name] = value
 
+        print(attrs)
         return model(**attrs)
 
     @classmethod
@@ -155,7 +242,7 @@ class GraphqlConvert:
             for key in vars(model).keys()
             if not key.startswith("_") and key not in ["model_config"]
         ]
-        result = input.from_pydantic(model)  # type: ignore
+        result = input(**model.extract_valid_value())
         for key in keys:
             try:
                 value = model.__getattribute__(key)
@@ -165,10 +252,10 @@ class GraphqlConvert:
                 if not value:
                     continue
                 _type = cls.get_input(value[0])
-                value = [_type.from_pydantic(inner) for inner in value]  # type: ignore
+                value = [_type(**inner.extract_valid_value()) for inner in value]
             elif isinstance(value, ModelUnion):
                 _type = cls.get_input(value)
-                value = _type.from_pydantic(value)  # type: ignore
+                value = _type(**value.extract_valid_value())
             result.__setattr__(key, value)
         return result
 
@@ -179,7 +266,7 @@ class GraphqlConvert:
             for key in vars(model).keys()
             if not key.startswith("_") and key not in ["model_config"]
         ]
-        result = type.from_pydantic(model)  # type: ignore
+        result = type(**model.extract_valid_value())
         for key in keys:
             try:
                 value = model.__getattribute__(key)
@@ -189,9 +276,9 @@ class GraphqlConvert:
                 if not value:
                     continue
                 _type = cls.get_type(value[0])
-                value = [_type.from_pydantic(inner) for inner in value]  # type: ignore
+                value = [_type(**inner.extract_valid_value()) for inner in value]
             elif isinstance(value, ModelUnion):
                 _type = cls.get_type(value)
-                value = _type.from_pydantic(value)  # type: ignore
+                value = _type(**value.extract_valid_value())
             result.__setattr__(key, value)
         return result

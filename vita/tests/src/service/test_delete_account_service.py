@@ -2,6 +2,7 @@ from datetime import datetime
 from unittest.mock import Mock, patch
 
 from sqlmodel import select
+from vita.src.model.convert import GraphqlConvert
 from vita.src.model.graphql_input import AccountGraphqlInput
 from vita.src.model.model import Account, BsPlEnum, CreditDebitEnum, DeptEnum
 from vita.src.service.delete_account_service import DeleteAccountService
@@ -28,12 +29,18 @@ def test_delete_account_service_case01(now: Mock, session: SQLSession):
     )
     account = session.save(Account, account, SYSTEM_USER)
 
-    input = AccountGraphqlInput.from_pydantic(account)
+    input = AccountGraphqlInput(
+        name="name",
+        description="des",
+        dept=DeptEnum.CURRENT_ASSETS,
+        bs_pl=BsPlEnum.BS,
+        credit_debit=CreditDebitEnum.DEBIT,
+    )
 
     service = DeleteAccountService(session)
     result = service.execute(input)
 
-    account = result.to_pydantic()
+    account = GraphqlConvert.type_to_model(Account, result)
 
     assert account.id
     assert account.name == "name"

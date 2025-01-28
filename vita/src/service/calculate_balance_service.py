@@ -42,7 +42,7 @@ class CalculateBalanceService(BaseService):
 
         if input.from_date:
             cond = Condition(
-                JournalEntry.date,
+                JournalEntry.target_date,
                 ConditionType.GREATER_THAN,
                 input.from_date,
             )
@@ -51,7 +51,7 @@ class CalculateBalanceService(BaseService):
 
         if input.to_date:
             cond = Condition(
-                JournalEntry.date,
+                JournalEntry.target_date,
                 ConditionType.LESS_THAN,
                 input.to_date,
             )
@@ -104,6 +104,9 @@ class CalculateBalanceService(BaseService):
 
         if not balances:
             return []
+
+        print("RESULT")
+        print(balances)
 
         return [
             GraphqlConvert.model_to_type(BalanceGraphqlType, balance)

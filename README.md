@@ -2,6 +2,39 @@
 
 ## 環境構築
 
+### pyenv
+
+1. pyenv-winのインストール
+
+* chocolateyでpyenv-winをインストール
+  https://community.chocolatey.org/packages?q=pyenv
+
+### poetry
+
+1. pyenvで、pythonのバージョン指定
+
+```
+pyenv local 3.10.5
+```
+
+2. pooetryのインストール
+
+```
+(Invoke-WebRequest -Uri https://install.python-poetry.org -UseBasicParsing).Content | python -
+```
+
+3. 環境変数指定
+
+```
+[System.Environment]::SetEnvironmentVariable('path', $env:APPDATA + "\Python\Scripts;" + [System.Environment]::GetEnvironmentVariable('path', "User"),"User")
+```
+
+4. 仮想環境のディレクトリをプロジェクト内に設定
+
+```
+poetry config virtualenvs.in-project true
+```
+
 ### direnv
 
 #### windows

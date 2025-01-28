@@ -33,7 +33,7 @@ def test_create_journal_entry_service_case01(session: SQLSession):
     journal_entry = JournalEntry(
         name="Sample Journal Entry",
         description="This is a sample journal entry.",
-        date=datetime.now().date(),
+        target_date=datetime.now().date(),
         status=StatusEnum.UNFIXED,
         create_date=datetime.now(),
         create_object_id=SYSTEM_USER,

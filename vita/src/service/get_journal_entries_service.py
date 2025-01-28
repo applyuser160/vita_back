@@ -37,12 +37,14 @@ class GetJournalEntriesService(BaseService):
 
         if input.from_date:
             cond = Condition(
-                JournalEntry.date, ConditionType.GREATER_THAN, input.from_date
+                JournalEntry.target_date, ConditionType.GREATER_THAN, input.from_date
             )
             conditions.append(cond.to_sqlachemy())
 
         if input.to_date:
-            cond = Condition(JournalEntry.date, ConditionType.LESS_THAN, input.to_date)
+            cond = Condition(
+                JournalEntry.target_date, ConditionType.LESS_THAN, input.to_date
+            )
             conditions.append(cond.to_sqlachemy())
 
         if input.status:

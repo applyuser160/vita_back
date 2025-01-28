@@ -2,19 +2,19 @@
 name = "vita"
 version = "0.1.0"
 description = ""
-authors = ["applyuser160 <syunsuke130121@gamil.com>"]
+authors = ["applyuser160","syunsuke130121@gamil.com"]
 readme = "README.md"
 package-mode = false
 
 [tool.poetry.dependencies]
 python = "^3.12"
-pre-commit = "^4.0.1"
+pre-commit = "^4.1.0"
 sqlmodel = "^0.0.22"
 python-dotenv = "^1.0.1"
 coloredlogs = "^15.0.1"
-mysqlclient = "^2.2.6"
+mysqlclient = "^2.2.7"
 pymysql = "^1.1.1"
-fastapi = "^0.115.6"
+fastapi = "^0.115.7"
 uvicorn = "^0.34.0"
 strawberry-graphql = {extras = ["cli"], version = "^0.258.0"}
 flake8 = "^7.1.1"
@@ -22,16 +22,9 @@ black = "^24.10.0"
 isort = "^5.13.2"
 pytest = "^8.3.4"
 
-
 [build-system]
-requires = ["poetry-core"]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.pytest.ini_options]
-pythonpath = "src"
 
 [tool.mypy]
 plugins = ["strawberry.ext.mypy_plugin"]
-
-[tool.poetry.scripts]
-run_with_path = "PYTHONPATH=/"

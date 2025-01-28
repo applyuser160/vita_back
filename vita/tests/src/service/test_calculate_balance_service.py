@@ -19,21 +19,21 @@ def test_calculate_balance_service_case01(session: SQLSession):
             id="id_1",
             name="name1",
             description="description1",
-            date=date(2022, 1, 1),
+            target_date=date(2022, 1, 1),
             status=StatusEnum.FIXED,
         ),
         JournalEntry(
             id="id_2",
             name="name2",
             description="description2",
-            date=date(2022, 1, 2),
+            target_date=date(2022, 1, 2),
             status=StatusEnum.RESOLVED,
         ),
         JournalEntry(
             id="id_3",
             name="name3",
             description="description3",
-            date=date(2022, 1, 3),
+            target_date=date(2022, 1, 3),
             status=StatusEnum.UNFIXED,
         ),
     ]
@@ -78,6 +78,8 @@ def test_calculate_balance_service_case01(session: SQLSession):
     results = CalculateBalanceService(session).execute(input)
 
     assert isinstance(results, list)
+
+    print(results)
 
     balances = [GraphqlConvert.type_to_model(Balance, result) for result in results]
 

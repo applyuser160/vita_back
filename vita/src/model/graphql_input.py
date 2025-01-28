@@ -1,37 +1,65 @@
-from datetime import date
-from typing import TypeVar
+from datetime import date, datetime
+from typing import TypeVar, ForwardRef
 
 import strawberry
 from vita.src.model.model import (
-    Account,
     BsPlEnum,
     CreditDebitEnum,
     DeptEnum,
-    InnerJournalEntry,
-    JournalEntry,
     StatusEnum,
-    SubAccount,
 )
 
 
-@strawberry.experimental.pydantic.input(model=Account, all_fields=True)
-class AccountGraphqlInput:
-    pass
+@strawberry.input
+class BaseGraphqlInput:
+    id: str | None = None
+    create_date: datetime | None = None
+    create_object_id: str | None = None
+    update_date: datetime | None = None
+    update_object_id: str | None = None
+    delete_date: datetime | None = None
+    delete_object_id: str | None = None
 
 
-@strawberry.experimental.pydantic.input(model=SubAccount, all_fields=True)
-class SubAccountGraphqlInput:
-    pass
+@strawberry.input
+class AccountGraphqlInput(BaseGraphqlInput):
+    name: str | None = None
+    description: str | None = None
+    dept: DeptEnum | None = None
+    bs_pl: BsPlEnum | None = None
+    credit_debit: CreditDebitEnum | None = None
+    sub_accounts: list["SubAccountGraphqlInput"] | None = None
 
 
-@strawberry.experimental.pydantic.input(model=InnerJournalEntry, all_fields=True)
-class InnerJournalEntryGraphqlInput:
-    pass
+@strawberry.input
+class SubAccountGraphqlInput(BaseGraphqlInput):
+    name: str | None = None
+    account_id: str | None = None
+    description: str | None = None
+    account: AccountGraphqlInput | None = None
 
 
-@strawberry.experimental.pydantic.input(model=JournalEntry, all_fields=True)
-class JournalEntryGraphqlInput:
-    pass
+@strawberry.input
+class InnerJournalEntryGraphqlInput(BaseGraphqlInput):
+    journal_entry_id: str | None = None
+    account_id: str | None = None
+    sub_account_id: str | None = None
+    amount: int | None = None
+    credit_debit: CreditDebitEnum | None = None
+    index: int | None = None
+    account: AccountGraphqlInput | None = None
+    sub_account: SubAccountGraphqlInput | None = None
+    journal_entry: ForwardRef("JournalEntryGraphqlInput") | None = None  # type: ignore
+    # journal_entry: Optional["JournalEntryGraphqlInput"] = None
+
+
+@strawberry.input
+class JournalEntryGraphqlInput(BaseGraphqlInput):
+    name: str | None = None
+    description: str | None = None
+    target_date: date | None = None
+    status: StatusEnum | None = None
+    inner_journal_entries: list[InnerJournalEntryGraphqlInput] | None = None
 
 
 @strawberry.input

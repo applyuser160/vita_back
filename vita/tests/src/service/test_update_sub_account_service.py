@@ -3,6 +3,7 @@ import json
 from unittest.mock import Mock, patch
 
 from sqlmodel import select
+from vita.src.model.convert import GraphqlConvert
 from vita.src.model.graphql_input import SubAccountGraphqlInput
 from vita.src.model.graphql_type import SubAccountGraphqlType, VitaErrorGraphqlType
 from vita.src.model.model import SubAccount
@@ -25,8 +26,11 @@ def test_update_sub_account_service_case01(session: SQLSession):
     )
     sub_account = session.save(SubAccount, sub_account, SYSTEM_USER)
 
-    sub_account.name = "0" * 101
-    input = SubAccountGraphqlInput.from_pydantic(sub_account)
+    input = SubAccountGraphqlInput(
+        name="0" * 101,
+        account_id="id",
+        description="des",
+    )
 
     service = UpdateSubAccountService(session)
     result = service.execute(input)
@@ -53,8 +57,11 @@ def test_update_account_service_case02(session: SQLSession):
     )
     sub_account = session.save(SubAccount, sub_account, SYSTEM_USER)
 
-    sub_account.name = None
-    input = SubAccountGraphqlInput.from_pydantic(sub_account)
+    input = SubAccountGraphqlInput(
+        name=None,
+        account_id="id",
+        description="des",
+    )
 
     service = UpdateSubAccountService(session)
     result = service.execute(input)
@@ -81,8 +88,11 @@ def test_update_account_service_case03(session: SQLSession):
     )
     sub_account = session.save(SubAccount, sub_account, SYSTEM_USER)
 
-    sub_account.description = "0" * 501
-    input = SubAccountGraphqlInput.from_pydantic(sub_account)
+    input = SubAccountGraphqlInput(
+        name="name",
+        account_id="id",
+        description="0" * 501,
+    )
 
     service = UpdateSubAccountService(session)
     result = service.execute(input)
@@ -112,13 +122,15 @@ def test_update_account_service_case05(now: Mock, session: SQLSession):
     )
     sub_account = session.save(SubAccount, sub_account, SYSTEM_USER)
 
-    sub_account.name = "new name"
-    sub_account.description = "description"
-    input = SubAccountGraphqlInput.from_pydantic(sub_account)
+    input = SubAccountGraphqlInput(
+        name="new name",
+        account_id="id",
+        description="description",
+    )
 
     service = UpdateSubAccountService(session)
     result: SubAccountGraphqlType = service.execute(input)
-    sub_account: SubAccount = result.to_pydantic()
+    sub_account: SubAccount = GraphqlConvert.type_to_model(SubAccount, result)
 
     assert sub_account.id
     assert sub_account.name == "new name"

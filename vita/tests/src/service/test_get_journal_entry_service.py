@@ -16,7 +16,7 @@ def test_get_journal_entry_service_case01(session: SQLSession):
     entity = JournalEntry(
         name="name",
         description="description",
-        date=date(2022, 1, 1),
+        target_date=date(2022, 1, 1),
         status=StatusEnum.FIXED,
     )
     entity = session.save(JournalEntry, entity, SYSTEM_USER)
@@ -44,7 +44,7 @@ def test_get_journal_entry_service_case01(session: SQLSession):
     assert journal_entry.name == entity.name
     assert journal_entry.description
     assert journal_entry.description == entity.description
-    assert journal_entry.date == entity.date
+    assert journal_entry.target_date == entity.target_date
     assert journal_entry.status == entity.status
 
     assert len(journal_entry.inner_journal_entries) == 1

@@ -3,6 +3,7 @@ import json
 from unittest.mock import Mock, patch
 
 from sqlmodel import select
+from vita.src.model.convert import GraphqlConvert
 from vita.src.model.graphql_input import AccountGraphqlInput
 from vita.src.model.graphql_type import VitaErrorGraphqlType
 from vita.src.model.model import Account, BsPlEnum, CreditDebitEnum, DeptEnum
@@ -27,8 +28,13 @@ def test_update_account_service_case01(session: SQLSession):
     )
     account: Account = session.save(Account, account, SYSTEM_USER)
 
-    account.name = "0" * 101
-    input = AccountGraphqlInput.from_pydantic(account)
+    input = AccountGraphqlInput(
+        name="0" * 101,
+        description="des",
+        dept=DeptEnum.CURRENT_ASSETS,
+        bs_pl=BsPlEnum.BS,
+        credit_debit=CreditDebitEnum.DEBIT,
+    )
 
     service = UpdateAccountService(session)
     result = service.execute(input)
@@ -52,8 +58,13 @@ def test_update_account_service_case02(session: SQLSession):
     )
     account: Account = session.save(Account, account, SYSTEM_USER)
 
-    account.name = None
-    input = AccountGraphqlInput.from_pydantic(account)
+    input = AccountGraphqlInput(
+        name=None,
+        description="des",
+        dept=DeptEnum.CURRENT_ASSETS,
+        bs_pl=BsPlEnum.BS,
+        credit_debit=CreditDebitEnum.DEBIT,
+    )
 
     service = UpdateAccountService(session)
     result = service.execute(input)
@@ -82,8 +93,13 @@ def test_update_account_service_case03(session: SQLSession):
     )
     account: Account = session.save(Account, account, SYSTEM_USER)
 
-    account.description = "0" * 501
-    input = AccountGraphqlInput.from_pydantic(account)
+    input = AccountGraphqlInput(
+        name="name",
+        description="0" * 501,
+        dept=DeptEnum.CURRENT_ASSETS,
+        bs_pl=BsPlEnum.BS,
+        credit_debit=CreditDebitEnum.DEBIT,
+    )
 
     service = UpdateAccountService(session)
     result = service.execute(input)
@@ -113,10 +129,13 @@ def test_update_account_service_case04(session: SQLSession):
     )
     account: Account = session.save(Account, account, SYSTEM_USER)
 
-    account.dept = None
-    account.bs_pl = None
-    account.credit_debit = None
-    input = AccountGraphqlInput.from_pydantic(account)
+    input = AccountGraphqlInput(
+        name="0" * 100,
+        description="0" * 500,
+        dept=None,
+        bs_pl=None,
+        credit_debit=None,
+    )
 
     service = UpdateAccountService(session)
     result = service.execute(input)
@@ -164,16 +183,17 @@ def test_update_account_service_case05(now: Mock, session: SQLSession):
     )
     account: Account = session.save(Account, account, SYSTEM_USER)
 
-    account.name = "new name"
-    account.description = "new description"
-    account.dept = DeptEnum.DEFERRED_ASSETS
-    account.bs_pl = BsPlEnum.PL
-    account.credit_debit = CreditDebitEnum.CREDIT
-    input = AccountGraphqlInput.from_pydantic(account)
+    input = AccountGraphqlInput(
+        name="new name",
+        description="new description",
+        dept=DeptEnum.DEFERRED_ASSETS,
+        bs_pl=BsPlEnum.PL,
+        credit_debit=CreditDebitEnum.CREDIT,
+    )
 
     service = UpdateAccountService(session)
     result = service.execute(input)
-    account: Account = result.to_pydantic()
+    account: Account = GraphqlConvert.type_to_model(Account, result)
 
     assert account.id
     assert account.name == "new name"

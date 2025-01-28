@@ -1,7 +1,10 @@
 from datetime import datetime
 
 
-from vita.src.model.graphql_input import JournalEntryGraphqlInput
+from vita.src.model.graphql_input import (
+    InnerJournalEntryGraphqlInput,
+    JournalEntryGraphqlInput,
+)
 from vita.src.model.graphql_type import JournalEntryGraphqlType
 from vita.src.model.model import (
     CreditDebitEnum,
@@ -9,7 +12,6 @@ from vita.src.model.model import (
     InnerJournalEntry,
     StatusEnum,
 )
-from vita.src.service.create_journal_entry_serivce import CreateJournalEntryService
 from vita.src.service.delete_journal_entry_serivce import DeleteJournalEntryService
 from vita.src.util.constant import SYSTEM_USER
 from vita.src.util.sql_model import SQLSession
@@ -23,7 +25,8 @@ def test_delete_journal_entry_service_case01(session: SQLSession):
     """
 
     inner_journal_entry = InnerJournalEntry(
-        journal_entry_id="some_id",
+        id="1",
+        journal_entry_id="2",
         account_id="account_id",
         sub_account_id="sub_account_id",
         amount=100,
@@ -32,9 +35,10 @@ def test_delete_journal_entry_service_case01(session: SQLSession):
     )
 
     journal_entry = JournalEntry(
+        id="2",
         name="Sample Journal Entry",
         description="This is a sample journal entry.",
-        date=datetime.now().date(),
+        target_date=datetime.now().date(),
         status=StatusEnum.UNFIXED,
         create_date=datetime.now(),
         create_object_id=SYSTEM_USER,
@@ -42,18 +46,36 @@ def test_delete_journal_entry_service_case01(session: SQLSession):
         update_object_id=SYSTEM_USER,
         delete_date=None,
         delete_object_id=None,
-        inner_journal_entries=[inner_journal_entry],
     )
 
-    input = GraphqlConvert.model_to_input(JournalEntryGraphqlInput, journal_entry)
+    session.save(JournalEntry, journal_entry, SYSTEM_USER)
+    session.save(InnerJournalEntry, inner_journal_entry, SYSTEM_USER)
+    session.session.expire_all()
 
-    res = CreateJournalEntryService(session).execute(input)
-    journal_entry = GraphqlConvert.type_to_model(JournalEntry, res)
+    inner_input = InnerJournalEntryGraphqlInput(
+        id="1",
+        journal_entry_id="2",
+        account_id="account_id",
+        sub_account_id="sub_account_id",
+        amount=1000,
+        credit_debit=CreditDebitEnum.DEBIT,
+        index=1,
+    )
 
-    journal_entry.name = "update name"
-    journal_entry.inner_journal_entries[0].amount = 1000
-
-    input = GraphqlConvert.model_to_input(JournalEntryGraphqlInput, journal_entry)
+    input = JournalEntryGraphqlInput(
+        id="2",
+        name="update name",
+        description="This is a sample journal entry.",
+        target_date=datetime.now().date(),
+        status=StatusEnum.UNFIXED,
+        create_date=datetime.now(),
+        create_object_id=SYSTEM_USER,
+        update_date=datetime.now(),
+        update_object_id=SYSTEM_USER,
+        delete_date=None,
+        delete_object_id=None,
+        inner_journal_entries=[inner_input],
+    )
 
     service = DeleteJournalEntryService(session)
     result: JournalEntryGraphqlType = service.execute(input)

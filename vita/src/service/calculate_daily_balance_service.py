@@ -43,7 +43,7 @@ class CalculateDailyBalanceService(BaseService):
 
         if input.from_date:
             cond = Condition(
-                JournalEntry.date,
+                JournalEntry.target_date,
                 ConditionType.GREATER_THAN,
                 input.from_date,
             )
@@ -52,7 +52,7 @@ class CalculateDailyBalanceService(BaseService):
 
         if input.to_date:
             cond = Condition(
-                JournalEntry.date,
+                JournalEntry.target_date,
                 ConditionType.LESS_THAN,
                 input.to_date,
             )
@@ -66,14 +66,14 @@ class CalculateDailyBalanceService(BaseService):
                 select(
                     InnerJournalEntry.account_id,
                     InnerJournalEntry.sub_account_id,
-                    JournalEntry.date,
+                    JournalEntry.target_date,
                     func.sum(InnerJournalEntry.amount).label("total_amount"),
                 )
                 .join(InnerJournalEntry.journal_entry)
                 .where(*account_conditions)
                 .group_by(
                     InnerJournalEntry.account_id,
-                    JournalEntry.date,
+                    JournalEntry.target_date,
                 )
             )
 
@@ -82,7 +82,7 @@ class CalculateDailyBalanceService(BaseService):
                     DailyBalance(
                         account_id=i[0],
                         sub_account_id=i[1],
-                        date=i[2],
+                        target_date=i[2],
                         total_amount=i[3],
                     )
                     for i in self.session.session.exec(query).all()
@@ -94,14 +94,14 @@ class CalculateDailyBalanceService(BaseService):
                 select(
                     InnerJournalEntry.account_id,
                     InnerJournalEntry.sub_account_id,
-                    JournalEntry.date,
+                    JournalEntry.target_date,
                     func.sum(InnerJournalEntry.amount).label("total_amount"),
                 )
                 .join(InnerJournalEntry.journal_entry)
                 .where(*sub_account_conditions)
                 .group_by(
                     InnerJournalEntry.sub_account_id,
-                    JournalEntry.date,
+                    JournalEntry.target_date,
                 )
             )
 
@@ -110,7 +110,7 @@ class CalculateDailyBalanceService(BaseService):
                     DailyBalance(
                         account_id=i[0],
                         sub_account_id=i[1],
-                        date=i[2],
+                        target_date=i[2],
                         total_amount=i[3],
                     )
                     for i in self.session.session.exec(query).all()

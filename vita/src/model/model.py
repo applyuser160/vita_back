@@ -122,9 +122,10 @@ class Account(Base, table=True):  # type: ignore
     bs_pl: BsPlEnum
     credit_debit: CreditDebitEnum
 
-    sub_accounts: list["SubAccount"] = Relationship(back_populates="account")
-    inner_journal_entries_account: list["InnerJournalEntry"] = Relationship(
-        back_populates="account"
+    sub_accounts: list["SubAccount"] | None = Relationship(back_populates="account")
+    inner_journal_entries_account: list["InnerJournalEntry"] | None = Relationship(
+        back_populates="account",
+        sa_relationship_kwargs={"cascade": "all", "viewonly": True},
     )
 
 
@@ -135,8 +136,9 @@ class SubAccount(Base, table=True):  # type: ignore
     description: str | None = Field(default=None, max_length=500)
 
     account: Account | None = Relationship(back_populates="sub_accounts")
-    inner_journal_entries_sub: list["InnerJournalEntry"] = Relationship(
-        back_populates="sub_account"
+    inner_journal_entries_sub: list["InnerJournalEntry"] | None = Relationship(
+        back_populates="sub_account",
+        sa_relationship_kwargs={"cascade": "all", "viewonly": True},
     )
 
 
@@ -144,10 +146,11 @@ class JournalEntry(Base, table=True):  # type: ignore
     __tablename__ = "journal_entry"
     name: str | None = Field(default=None, max_length=100)
     description: str | None = Field(default=None, max_length=500)
-    date: date
+    target_date: date
     status: StatusEnum
-    inner_journal_entries: list["InnerJournalEntry"] = Relationship(
-        back_populates="journal_entry"
+    inner_journal_entries: list["InnerJournalEntry"] | None = Relationship(
+        back_populates="journal_entry",
+        sa_relationship_kwargs={"cascade": "all", "viewonly": True},
     )
 
 
@@ -161,27 +164,30 @@ class InnerJournalEntry(Base, table=True):  # type: ignore
     index: int | None = Field(default=None)
 
     account: Account | None = Relationship(
-        back_populates="inner_journal_entries_account"
+        back_populates="inner_journal_entries_account",
+        sa_relationship_kwargs={"cascade": "all", "viewonly": True},
     )
     sub_account: SubAccount | None = Relationship(
-        back_populates="inner_journal_entries_sub"
+        back_populates="inner_journal_entries_sub",
+        sa_relationship_kwargs={"cascade": "all", "viewonly": True},
     )
     journal_entry: JournalEntry | None = Relationship(
-        back_populates="inner_journal_entries"
+        back_populates="inner_journal_entries",
+        sa_relationship_kwargs={"cascade": "all", "viewonly": True},
     )
 
 
-class Balance(Base):
-    account_id: str | None
-    sub_account_id: str | None
-    total_amount: int
+class Balance(Base, table=True):  # type: ignore
+    account_id: str | None = None
+    sub_account_id: str | None = None
+    total_amount: int | None = None
 
 
-class DailyBalance(Base):
-    account_id: str | None
-    sub_account_id: str | None
-    date: date
-    total_amount: int
+class DailyBalance(Base, table=True):  # type: ignore
+    account_id: str | None = None
+    sub_account_id: str | None = None
+    target_date: date | None = None
+    total_amount: int | None = None
 
 
 ModelUnion = (

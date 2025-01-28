@@ -3,10 +3,11 @@ from __future__ import annotations
 from datetime import datetime
 import json
 import logging
-from typing import Literal, Self, TypeVar
+from typing import Literal, TypeVar
 from uuid import uuid4
 
 from pydantic import ValidationError
+from sqlalchemy import inspect
 from sqlalchemy.engine import URL
 from sqlalchemy.orm import Query
 from sqlmodel import Field, Session, SQLModel, create_engine, select
@@ -45,7 +46,7 @@ class Base(SQLModel, table=False):  # type: ignore
     def copy_only_id(self):
         return Base(id=self.id)
 
-    def copy_poperty(self: Self, copy: Self, properties: list[str]):
+    def copy_poperty(self, copy, properties: list[str]):
         for k in properties:
             v = getattr(copy, k)
             setattr(self, k, v)
@@ -75,6 +76,36 @@ class Base(SQLModel, table=False):  # type: ignore
 
     def validate(self):
         self.model_validate(self)
+
+    def get_columns_and_relationships(self):
+        ins = inspect(type(self))
+
+        columns = [column.name for column in ins.columns]
+        relationships = [relationship.key for relationship in ins.relationships]
+        uselists = [relationship.uselist for relationship in ins.relationships]
+
+        return columns, relationships, uselists
+
+    def delete_relationships(self):
+        ins = inspect(type(self))
+        relationships = [relationship.key for relationship in ins.relationships]
+
+        for key in relationships:
+            print(f"find attr {key}")
+            # try:
+            #     self.__getattribute__(key)
+            # except AttributeError:
+            #     continue
+            print(hasattr(self, key))
+            # if hasattr(self, key):
+            print(f"del attr {key}")
+            print(f"value {self.__getattribute__(key)}")
+            print(f"value {type(self.__getattribute__(key))}")
+            try:
+                delattr(self, key)
+            except Exception as e:
+                print(e)
+            print(f"deleted attr {key}")
 
 
 T = TypeVar("T", bound=Base)
@@ -204,13 +235,25 @@ class SQLSession:
                 if isinstance(entity_from_db, model_type):
                     entity = entity_from_db
 
+            print("SAVE")
+
             entity.add_or_update(object_id)
             entity.copy_poperty(model, model.extract_valid_value().keys())
+            print("DELETE RELATION")
+            entity.delete_relationships()
+            print(entity)
+
+            print("SAVE")
+
             if is_new:
                 self.session.add(entity)
             else:
                 self.session.merge(entity)
+            print("COMMIT")
             self.session.commit()
+            print("REFLASH")
+            print(entity)
+            # self.session.refresh(entity) # TODO: 必要なのか検討
             return entity
         except Exception as e:
             self.logg.error("save sql error", {"message": str(e)})
@@ -251,6 +294,7 @@ class SQLSession:
             entity = self._find_base(model_type, model.copy_only_id())
             self.session.delete(entity)
             self.session.commit()
+            self.session.refresh(entity)
         except Exception as e:
             self.logg.error("delete sql error", {"message": str(e)})
 

@@ -3,6 +3,7 @@ import json
 from unittest.mock import Mock, patch
 
 from sqlmodel import select
+from vita.src.model.convert import GraphqlConvert
 from vita.src.model.graphql_input import SubAccountGraphqlInput
 from vita.src.model.graphql_type import SubAccountGraphqlType, VitaErrorGraphqlType
 from vita.src.model.model import SubAccount
@@ -18,12 +19,11 @@ def test_create_sub_account_service_case01(session: SQLSession):
     バリデーションエラー(勘定科目名が100文字を超過)
     """
 
-    sub_account = SubAccount(
+    input = SubAccountGraphqlInput(
         name="0" * 101,
         account_id="id",
         description="des",
     )
-    input = SubAccountGraphqlInput.from_pydantic(sub_account)
 
     service = CreateSubAccountService(session)
     result = service.execute(input)
@@ -37,18 +37,17 @@ def test_create_sub_account_service_case01(session: SQLSession):
     assert message_dict["location"] == ["name"]
 
 
-def test_create_account_service_case02(session: SQLSession):
+def test_create_sub_account_service_case02(session: SQLSession):
     """
     テスト観点:
     バリデーションエラー(勘定科目名が空)
     """
 
-    sub_account = SubAccount(
+    input = SubAccountGraphqlInput(
         name=None,
         account_id="id",
         description="des",
     )
-    input = SubAccountGraphqlInput.from_pydantic(sub_account)
 
     service = CreateSubAccountService(session)
     result = service.execute(input)
@@ -62,18 +61,17 @@ def test_create_account_service_case02(session: SQLSession):
     assert message_dict["location"] == ["name"]
 
 
-def test_create_account_service_case03(session: SQLSession):
+def test_create_sub_account_service_case03(session: SQLSession):
     """
     テスト観点:
     バリデーションエラー(説明が500文字を超過)
     """
 
-    sub_account = SubAccount(
+    input = SubAccountGraphqlInput(
         name="name",
         account_id="id",
         description="0" * 501,
     )
-    input = SubAccountGraphqlInput.from_pydantic(sub_account)
 
     service = CreateSubAccountService(session)
     result = service.execute(input)
@@ -88,7 +86,7 @@ def test_create_account_service_case03(session: SQLSession):
 
 
 @patch.object(VitaDatetime, "now")
-def test_create_account_service_case05(now: Mock, session: SQLSession):
+def test_create_sub_account_service_case04(now: Mock, session: SQLSession):
     """
     テスト観点:
     正常系
@@ -96,16 +94,15 @@ def test_create_account_service_case05(now: Mock, session: SQLSession):
 
     now.return_value = datetime(2024, 1, 1, 9, 0, 0, 0)
 
-    sub_account = SubAccount(
+    input = SubAccountGraphqlInput(
         name="name",
         account_id="id",
         description="des",
     )
-    input = SubAccountGraphqlInput.from_pydantic(sub_account)
 
     service = CreateSubAccountService(session)
     result: SubAccountGraphqlType = service.execute(input)
-    sub_account: SubAccount = result.to_pydantic()
+    sub_account: SubAccount = GraphqlConvert.type_to_model(SubAccount, result)
 
     assert sub_account.id
     assert sub_account.name == "name"

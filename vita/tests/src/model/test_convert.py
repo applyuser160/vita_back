@@ -18,28 +18,25 @@ def test_input_to_model_case01():
     テスト観点:
     一対多の接続があるモデル
     """
-    sub_account = SubAccount(
-        name="sub account",
-        account_id="id",
-        description="desc",
-    )
 
-    account = Account(
+    input = AccountGraphqlInput(
         id="id",
-        create_date=VitaDatetime.now(),
+        create_date=VitaDatetime(2025, 1, 1),
         create_object_id="create",
-        update_date=VitaDatetime.now(),
+        update_date=VitaDatetime(2025, 1, 1),
         update_object_id="update",
         name="account name",
         description="description",
         dept=DeptEnum.CURRENT_ASSETS,
         bs_pl=BsPlEnum.BS,
         credit_debit=CreditDebitEnum.CREDIT,
-    )
-
-    input = AccountGraphqlInput.from_pydantic(account)
-    input.__setattr__(
-        "sub_accounts", [SubAccountGraphqlInput.from_pydantic(sub_account)]
+        sub_accounts=[
+            SubAccountGraphqlInput(
+                name="sub account",
+                account_id="id",
+                description="desc",
+            )
+        ],
     )
 
     assert input.sub_accounts
@@ -48,26 +45,26 @@ def test_input_to_model_case01():
 
     assert isinstance(result, Account)
     assert result.id
-    assert result.id == account.id
+    assert result.id == "id"
     assert result.create_date
-    assert result.create_date == account.create_date
+    assert result.create_date == VitaDatetime(2025, 1, 1)
     assert result.create_object_id
-    assert result.create_object_id == account.create_object_id
+    assert result.create_object_id == "create"
     assert result.update_date
-    assert result.update_date == account.update_date
+    assert result.update_date == VitaDatetime(2025, 1, 1)
     assert result.update_object_id
-    assert result.update_object_id == account.update_object_id
-    assert result.name == account.name
+    assert result.update_object_id == "update"
+    assert result.name == "account name"
     assert result.description
-    assert result.description == account.description
-    assert result.dept == account.dept
-    assert result.bs_pl == account.bs_pl
-    assert result.credit_debit == account.credit_debit
+    assert result.description == "description"
+    assert result.dept == DeptEnum.CURRENT_ASSETS
+    assert result.bs_pl == BsPlEnum.BS
+    assert result.credit_debit == CreditDebitEnum.CREDIT
     assert result.sub_accounts
     assert len(result.sub_accounts) == 1
-    assert result.sub_accounts[0].name == sub_account.name
-    assert result.sub_accounts[0].account_id == sub_account.account_id
-    assert result.sub_accounts[0].description == sub_account.description
+    assert result.sub_accounts[0].name == "sub account"
+    assert result.sub_accounts[0].account_id == "id"
+    assert result.sub_accounts[0].description == "desc"
     assert not result.inner_journal_entries_account
 
 
@@ -76,35 +73,31 @@ def test_input_to_model_case02():
     テスト観点:
     多対一の接続があるモデル
     """
-    sub_account = SubAccount(
+    input = SubAccountGraphqlInput(
         name="sub account",
         account_id="id",
         description="desc",
+        account=AccountGraphqlInput(
+            id="id",
+            create_date=VitaDatetime.now(),
+            create_object_id="create",
+            update_date=VitaDatetime.now(),
+            update_object_id="update",
+            name="account name",
+            description="description",
+            dept=DeptEnum.CURRENT_ASSETS,
+            bs_pl=BsPlEnum.BS,
+            credit_debit=CreditDebitEnum.CREDIT,
+        ),
     )
-
-    account = Account(
-        id="id",
-        create_date=VitaDatetime.now(),
-        create_object_id="create",
-        update_date=VitaDatetime.now(),
-        update_object_id="update",
-        name="account name",
-        description="description",
-        dept=DeptEnum.CURRENT_ASSETS,
-        bs_pl=BsPlEnum.BS,
-        credit_debit=CreditDebitEnum.CREDIT,
-    )
-
-    input = SubAccountGraphqlInput.from_pydantic(sub_account)
-    input.__setattr__("account", AccountGraphqlInput.from_pydantic(account))
 
     assert input.account
 
     result = GraphqlConvert.input_to_model(SubAccount, input)
 
     assert isinstance(result, SubAccount)
-    assert result.name == sub_account.name
-    assert result.account.id == account.id
+    assert result.name == "sub account"
+    assert result.account.id == "id"
 
 
 def test_input_to_model_case03(session: SQLSession):
@@ -112,28 +105,24 @@ def test_input_to_model_case03(session: SQLSession):
     テスト観点:
     DBへレコードを挿入
     """
-    sub_account = SubAccount(
-        name="sub account",
-        account_id="id",
-        description="desc",
-    )
-
-    account = Account(
+    input = AccountGraphqlInput(
         id="id",
-        create_date=VitaDatetime.now(),
+        create_date=VitaDatetime(2025, 1, 1),
         create_object_id="create",
-        update_date=VitaDatetime.now(),
+        update_date=VitaDatetime(2025, 1, 1),
         update_object_id="update",
         name="account name",
         description="description",
         dept=DeptEnum.CURRENT_ASSETS,
         bs_pl=BsPlEnum.BS,
         credit_debit=CreditDebitEnum.CREDIT,
-    )
-
-    input = AccountGraphqlInput.from_pydantic(account)
-    input.__setattr__(
-        "sub_accounts", [SubAccountGraphqlInput.from_pydantic(sub_account)]
+        sub_accounts=[
+            SubAccountGraphqlInput(
+                name="sub account",
+                account_id="id",
+                description="desc",
+            )
+        ],
     )
 
     assert input.sub_accounts
@@ -141,9 +130,13 @@ def test_input_to_model_case03(session: SQLSession):
     model = GraphqlConvert.input_to_model(Account, input)
     inner_models = GraphqlConvert.copy_models(model.sub_accounts)
 
-    session.save(Account, model, SYSTEM_USER)
-    for inner_model in inner_models:
-        session.save(SubAccount, inner_model, SYSTEM_USER)
+    model = session.save(Account, model, SYSTEM_USER)
+    # session.session.refresh(model)
+    inner_model = session.save(SubAccount, inner_models[0], SYSTEM_USER)
+    # session.session.refresh(inner_model)
+
+    assert model
+    assert inner_model
 
     records = session.find(Account, isOne=False)
     inner_records = session.find(SubAccount, isOne=False)
@@ -157,27 +150,25 @@ def test_type_to_model_case01():
     テスト観点:
     一対多の接続があるモデル
     """
-    sub_account = SubAccount(
-        name="sub account",
-        account_id="id",
-        description="desc",
-    )
-
-    account = Account(
+    type = AccountGraphqlType(
         id="id",
-        create_date=VitaDatetime.now(),
+        create_date=VitaDatetime(2025, 1, 1),
         create_object_id="create",
-        update_date=VitaDatetime.now(),
+        update_date=VitaDatetime(2025, 1, 1),
         update_object_id="update",
         name="account name",
         description="description",
         dept=DeptEnum.CURRENT_ASSETS,
         bs_pl=BsPlEnum.BS,
         credit_debit=CreditDebitEnum.CREDIT,
+        sub_accounts=[
+            SubAccountGraphqlType(
+                name="sub account",
+                account_id="id",
+                description="desc",
+            )
+        ],
     )
-
-    type = AccountGraphqlType.from_pydantic(account)
-    type.__setattr__("sub_accounts", [SubAccountGraphqlType.from_pydantic(sub_account)])
 
     assert type.sub_accounts
 
@@ -185,26 +176,26 @@ def test_type_to_model_case01():
 
     assert isinstance(result, Account)
     assert result.id
-    assert result.id == account.id
+    assert result.id == "id"
     assert result.create_date
-    assert result.create_date == account.create_date
+    assert result.create_date == VitaDatetime(2025, 1, 1)
     assert result.create_object_id
-    assert result.create_object_id == account.create_object_id
+    assert result.create_object_id == "create"
     assert result.update_date
-    assert result.update_date == account.update_date
+    assert result.update_date == VitaDatetime(2025, 1, 1)
     assert result.update_object_id
-    assert result.update_object_id == account.update_object_id
-    assert result.name == account.name
+    assert result.update_object_id == "update"
+    assert result.name == "account name"
     assert result.description
-    assert result.description == account.description
-    assert result.dept == account.dept
-    assert result.bs_pl == account.bs_pl
-    assert result.credit_debit == account.credit_debit
+    assert result.description == "description"
+    assert result.dept == DeptEnum.CURRENT_ASSETS
+    assert result.bs_pl == BsPlEnum.BS
+    assert result.credit_debit == CreditDebitEnum.CREDIT
     assert result.sub_accounts
     assert len(result.sub_accounts) == 1
-    assert result.sub_accounts[0].name == sub_account.name
-    assert result.sub_accounts[0].account_id == sub_account.account_id
-    assert result.sub_accounts[0].description == sub_account.description
+    assert result.sub_accounts[0].name == "sub account"
+    assert result.sub_accounts[0].account_id == "id"
+    assert result.sub_accounts[0].description == "desc"
     assert not result.inner_journal_entries_account
 
 
@@ -213,35 +204,32 @@ def test_type_to_model_case02():
     テスト観点:
     多対一の接続があるモデル
     """
-    sub_account = SubAccount(
+    type = SubAccountGraphqlType(
         name="sub account",
         account_id="id",
         description="desc",
+        account=AccountGraphqlType(
+            id="id",
+            create_date=VitaDatetime.now(),
+            create_object_id="create",
+            update_date=VitaDatetime.now(),
+            update_object_id="update",
+            name="account name",
+            description="description",
+            dept=DeptEnum.CURRENT_ASSETS,
+            bs_pl=BsPlEnum.BS,
+            credit_debit=CreditDebitEnum.CREDIT,
+        ),
     )
-
-    account = Account(
-        id="id",
-        create_date=VitaDatetime.now(),
-        create_object_id="create",
-        update_date=VitaDatetime.now(),
-        update_object_id="update",
-        name="account name",
-        description="description",
-        dept=DeptEnum.CURRENT_ASSETS,
-        bs_pl=BsPlEnum.BS,
-        credit_debit=CreditDebitEnum.CREDIT,
-    )
-
-    type = SubAccountGraphqlType.from_pydantic(sub_account)
-    type.__setattr__("account", AccountGraphqlType.from_pydantic(account))
 
     assert type.account
 
     result = GraphqlConvert.type_to_model(SubAccount, type)
 
     assert isinstance(result, SubAccount)
-    assert result.name == sub_account.name
-    assert result.account.id == account.id
+    assert result.name == "sub account"
+    assert result.account
+    assert result.account.id == "id"
 
 
 def test_model_to_input_case01():

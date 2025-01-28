@@ -1,5 +1,6 @@
 from typing import override
 
+from vita.src.model.convert import GraphqlConvert
 from vita.src.model.graphql_input import AccountGraphqlInput
 from vita.src.model.graphql_type import AccountGraphqlType, VitaErrorGraphqlType
 from vita.src.model.model import Account
@@ -20,11 +21,15 @@ class DeleteAccountService(BaseService):
         self, input: AccountGraphqlInput
     ) -> AccountGraphqlType | VitaErrorGraphqlType:
 
-        account = input.to_pydantic()  # type: ignore
+        account = GraphqlConvert.input_to_model(Account, input)
 
         try:
             result = self.session.logical_delete(Account, account, SYSTEM_USER)
+            self.session.session.refresh(result)
         except VitaError as e:
             return VitaErrorGraphqlType(error_code=e.error_code, message=e.message)
 
-        return AccountGraphqlType.from_pydantic(result)  # type: ignore
+        if not result:
+            return VitaErrorGraphqlType(error_code=400, message="Not found")
+
+        return GraphqlConvert.model_to_type(AccountGraphqlType, result)

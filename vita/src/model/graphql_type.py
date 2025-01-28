@@ -1,76 +1,79 @@
-from typing import TypeVar
+from datetime import datetime, date
+from typing import TypeVar, ForwardRef
 import strawberry
 from vita.src.model.model import (
-    Account,
-    Balance,
-    DailyBalance,
-    InnerJournalEntry,
-    JournalEntry,
-    SubAccount,
+    BsPlEnum,
+    CreditDebitEnum,
+    DeptEnum,
+    StatusEnum,
 )
 
 
-@strawberry.experimental.pydantic.type(model=Account)
-class AccountGraphqlType:
-    id: strawberry.auto
-    create_date: strawberry.auto
-    create_object_id: strawberry.auto
-    update_date: strawberry.auto
-    update_object_id: strawberry.auto
-    delete_date: strawberry.auto
-    delete_object_id: strawberry.auto
-    name: strawberry.auto
-    description: strawberry.auto
-    dept: strawberry.auto
-    bs_pl: strawberry.auto
-    credit_debit: strawberry.auto
-    sub_accounts: list["SubAccountGraphqlType"]
+@strawberry.type
+class BaseGraphqlType:
+    id: str | None = None
+    create_date: datetime | None = None
+    create_object_id: str | None = None
+    update_date: datetime | None = None
+    update_object_id: str | None = None
+    delete_date: datetime | None = None
+    delete_object_id: str | None = None
 
 
-@strawberry.experimental.pydantic.type(model=SubAccount)
-class SubAccountGraphqlType:
-    id: strawberry.auto
-    create_date: strawberry.auto
-    create_object_id: strawberry.auto
-    update_date: strawberry.auto
-    update_object_id: strawberry.auto
-    delete_date: strawberry.auto
-    delete_object_id: strawberry.auto
-    name: strawberry.auto
-    account_id: strawberry.auto
-    description: strawberry.auto
-    account: AccountGraphqlType
+@strawberry.type
+class AccountGraphqlType(BaseGraphqlType):
+    name: str | None = None
+    description: str | None = None
+    dept: DeptEnum | None = None
+    bs_pl: BsPlEnum | None = None
+    credit_debit: CreditDebitEnum | None = None
+    sub_accounts: list["SubAccountGraphqlType"] | None = None
 
 
-@strawberry.experimental.pydantic.type(model=InnerJournalEntry, all_fields=True)
-class InnerJournalEntryGraphqlType:
-    pass
+@strawberry.type
+class SubAccountGraphqlType(BaseGraphqlType):
+    name: str | None = None
+    account_id: str | None = None
+    description: str | None = None
+    account: AccountGraphqlType | None = None
 
 
-@strawberry.experimental.pydantic.type(model=JournalEntry)
-class JournalEntryGraphqlType:
-    id: strawberry.auto
-    create_date: strawberry.auto
-    create_object_id: strawberry.auto
-    update_date: strawberry.auto
-    update_object_id: strawberry.auto
-    delete_date: strawberry.auto
-    delete_object_id: strawberry.auto
-    name: strawberry.auto
-    description: strawberry.auto
-    date: strawberry.auto
-    status: strawberry.auto
-    inner_journal_entries: list[InnerJournalEntryGraphqlType]
+@strawberry.type
+class InnerJournalEntryGraphqlType(BaseGraphqlType):
+    journal_entry_id: str | None = None
+    account_id: str | None = None
+    sub_account_id: str | None = None
+    amount: int | None = None
+    credit_debit: CreditDebitEnum | None = None
+    index: int | None = None
+    account: AccountGraphqlType | None = None
+    sub_account: SubAccountGraphqlType | None = None
+    journal_entry: ForwardRef("JournalEntryGraphqlType") | None = None  # type: ignore
+    # journal_entry: Optional["JournalEntryGraphqlType"] = None
 
 
-@strawberry.experimental.pydantic.type(model=Balance, all_fields=True)
-class BalanceGraphqlType:
-    pass
+@strawberry.type
+class JournalEntryGraphqlType(BaseGraphqlType):
+    name: str | None = None
+    description: str | None = None
+    target_date: date | None = None
+    status: StatusEnum | None = None
+    inner_journal_entries: list[InnerJournalEntryGraphqlType] | None = None
 
 
-@strawberry.experimental.pydantic.type(model=DailyBalance, all_fields=True)
-class DailyBalanceGraphqlType:
-    pass
+@strawberry.type
+class BalanceGraphqlType(BaseGraphqlType):
+    account_id: str | None = None
+    sub_account_id: str | None = None
+    total_amount: int | None = None
+
+
+@strawberry.type
+class DailyBalanceGraphqlType(BaseGraphqlType):
+    account_id: str | None = None
+    sub_account_id: str | None = None
+    target_date: date | None = None
+    total_amount: int | None = None
 
 
 Y = TypeVar(

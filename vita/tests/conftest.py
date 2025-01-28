@@ -7,10 +7,11 @@ from vita.src.util.sql_model import SQLSession
 
 
 @pytest.fixture
-def session() -> SQLSession:
+def session():
     logg = Logg()
     logg.logger.level = logging.DEBUG
     session = SQLSession(logg, "sqlite")
     SQLModel.metadata.drop_all(session.session.bind)
     SQLModel.metadata.create_all(session.session.bind)
-    return session
+    yield session
+    session.close()

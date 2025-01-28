@@ -23,12 +23,16 @@ class CreateJournalEntryService(BaseService):
 
         journal_entry = GraphqlConvert.input_to_model(JournalEntry, input)
         journal_entry.id = None
-        inner_journal_entries = GraphqlConvert.copy_models(
-            journal_entry.inner_journal_entries
-        )
+        if journal_entry.inner_journal_entries:
+            inner_journal_entries = GraphqlConvert.copy_models(
+                journal_entry.inner_journal_entries
+            )
+        else:
+            inner_journal_entries = []
 
         try:
             result = self.session.save(JournalEntry, journal_entry, SYSTEM_USER)
+            self.session.session.refresh(result)
             if not result or not result.id:
                 return VitaErrorGraphqlType(
                     error_code=500, message="Failed to create journal entry"

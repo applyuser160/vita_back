@@ -17,19 +17,19 @@ def test_get_journal_entries_service_case01(session: SQLSession):
         JournalEntry(
             name="name1",
             description="description1",
-            date=date(2022, 1, 1),
+            target_date=date(2022, 1, 1),
             status=StatusEnum.FIXED,
         ),
         JournalEntry(
             name="name2",
             description="description2",
-            date=date(2022, 1, 1),
+            target_date=date(2022, 1, 1),
             status=StatusEnum.RESOLVED,
         ),
         JournalEntry(
             name="name3",
             description="description3",
-            date=date(2022, 1, 1),
+            target_date=date(2022, 1, 1),
             status=StatusEnum.UNFIXED,
         ),
     ]
@@ -84,7 +84,7 @@ def test_get_journal_entries_service_case01(session: SQLSession):
     assert journal_entry.name == entity.name
     assert journal_entry.description
     assert journal_entry.description == entity.description
-    assert journal_entry.date == entity.date
+    assert journal_entry.target_date == entity.target_date
     assert journal_entry.status == entity.status
 
     assert len(journal_entry.inner_journal_entries) == 2
@@ -118,7 +118,7 @@ def test_get_journal_entries_service_case01(session: SQLSession):
     assert journal_entry.name == entity.name
     assert journal_entry.description
     assert journal_entry.description == entity.description
-    assert journal_entry.date == entity.date
+    assert journal_entry.target_date == entity.target_date
     assert journal_entry.status == entity.status
 
     assert len(journal_entry.inner_journal_entries) == 1
@@ -141,7 +141,7 @@ def test_get_journal_entries_service_case01(session: SQLSession):
     assert journal_entry.name == entity.name
     assert journal_entry.description
     assert journal_entry.description == entity.description
-    assert journal_entry.date == entity.date
+    assert journal_entry.target_date == entity.target_date
     assert journal_entry.status == entity.status
 
 
@@ -151,21 +151,21 @@ def test_get_journal_entries_service_case02(session: SQLSession):
             id="id_1",
             name="name1",
             description="description1",
-            date=date(2022, 1, 1),
+            target_date=date(2022, 1, 1),
             status=StatusEnum.FIXED,
         ),
         JournalEntry(
             id="id_2",
             name="name2",
             description="description2",
-            date=date(2022, 1, 1),
+            target_date=date(2022, 1, 1),
             status=StatusEnum.RESOLVED,
         ),
         JournalEntry(
             id="id_3",
             name="name3",
             description="description3",
-            date=date(2022, 1, 1),
+            target_date=date(2022, 1, 1),
             status=StatusEnum.UNFIXED,
         ),
     ]
@@ -220,7 +220,7 @@ def test_get_journal_entries_service_case02(session: SQLSession):
     assert journal_entry.name == entity.name
     assert journal_entry.description
     assert journal_entry.description == entity.description
-    assert journal_entry.date == entity.date
+    assert journal_entry.target_date == entity.target_date
     assert journal_entry.status == entity.status
 
     assert len(journal_entry.inner_journal_entries) == 2
@@ -254,7 +254,7 @@ def test_get_journal_entries_service_case02(session: SQLSession):
     assert journal_entry.name == entity.name
     assert journal_entry.description
     assert journal_entry.description == entity.description
-    assert journal_entry.date == entity.date
+    assert journal_entry.target_date == entity.target_date
     assert journal_entry.status == entity.status
 
     assert len(journal_entry.inner_journal_entries) == 1
@@ -276,19 +276,19 @@ def test_get_journal_entries_service_case03(session: SQLSession):
         JournalEntry(
             name="name1",
             description="description1",
-            date=date(2022, 1, 1),
+            target_date=date(2022, 1, 1),
             status=StatusEnum.FIXED,
         ),
         JournalEntry(
             name="name2",
             description="description2",
-            date=date(2022, 1, 1),
+            target_date=date(2022, 1, 1),
             status=StatusEnum.RESOLVED,
         ),
         JournalEntry(
             name="name3",
             description="description3",
-            date=date(2022, 1, 1),
+            target_date=date(2022, 1, 1),
             status=StatusEnum.UNFIXED,
         ),
     ]
@@ -343,7 +343,7 @@ def test_get_journal_entries_service_case03(session: SQLSession):
     assert journal_entry.name == entity.name
     assert journal_entry.description
     assert journal_entry.description == entity.description
-    assert journal_entry.date == entity.date
+    assert journal_entry.target_date == entity.target_date
     assert journal_entry.status == entity.status
 
     assert len(journal_entry.inner_journal_entries) == 2
