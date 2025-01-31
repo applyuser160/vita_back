@@ -49,7 +49,6 @@ class InnerJournalEntryGraphqlType(BaseGraphqlType):
     account: AccountGraphqlType | None = None
     sub_account: SubAccountGraphqlType | None = None
     journal_entry: ForwardRef("JournalEntryGraphqlType") | None = None  # type: ignore
-    # journal_entry: Optional["JournalEntryGraphqlType"] = None
 
 
 @strawberry.type

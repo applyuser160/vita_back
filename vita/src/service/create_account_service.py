@@ -30,9 +30,6 @@ class CreateAccountService(BaseService):
         except VitaError as e:
             return VitaErrorGraphqlType(error_code=e.error_code, message=e.message)
 
-        print(result)
-        print(type(result))
-
         if not result:
             return VitaErrorGraphqlType(error_code=400, message="Not found")
 

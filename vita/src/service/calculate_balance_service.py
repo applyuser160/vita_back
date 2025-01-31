@@ -105,9 +105,6 @@ class CalculateBalanceService(BaseService):
         if not balances:
             return []
 
-        print("RESULT")
-        print(balances)
-
         return [
             GraphqlConvert.model_to_type(BalanceGraphqlType, balance)
             for balance in balances

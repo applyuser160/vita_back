@@ -91,21 +91,10 @@ class Base(SQLModel, table=False):  # type: ignore
         relationships = [relationship.key for relationship in ins.relationships]
 
         for key in relationships:
-            print(f"find attr {key}")
-            # try:
-            #     self.__getattribute__(key)
-            # except AttributeError:
-            #     continue
-            print(hasattr(self, key))
-            # if hasattr(self, key):
-            print(f"del attr {key}")
-            print(f"value {self.__getattribute__(key)}")
-            print(f"value {type(self.__getattribute__(key))}")
             try:
                 delattr(self, key)
             except Exception as e:
                 print(e)
-            print(f"deleted attr {key}")
 
 
 T = TypeVar("T", bound=Base)
@@ -235,24 +224,17 @@ class SQLSession:
                 if isinstance(entity_from_db, model_type):
                     entity = entity_from_db
 
-            print("SAVE")
-
             entity.add_or_update(object_id)
             entity.copy_poperty(model, model.extract_valid_value().keys())
-            print("DELETE RELATION")
             entity.delete_relationships()
-            print(entity)
-
-            print("SAVE")
 
             if is_new:
                 self.session.add(entity)
             else:
                 self.session.merge(entity)
-            print("COMMIT")
+
             self.session.commit()
-            print("REFLASH")
-            print(entity)
+
             # self.session.refresh(entity) # TODO: 必要なのか検討
             return entity
         except Exception as e:

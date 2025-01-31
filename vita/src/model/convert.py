@@ -185,9 +185,7 @@ class GraphqlConvert:
 
     @classmethod
     def type_to_model(cls, model: type[T], type: Y) -> T:
-        print("SEC1")
         columns, relatinships, uselists = model().get_columns_and_relationships()
-        print("SEC2")
         attributes: list[AttributeInfo] = [
             *[
                 AttributeInfo(name=i, is_relatinship=False, use_list=False)
@@ -205,8 +203,6 @@ class GraphqlConvert:
                 value = type.__getattribute__(attribute.name)
             except AttributeError:
                 value = None
-
-            print(f"attr: {attribute.name}, value: {value}")
 
             if attribute.use_list:
                 if isinstance(value, list):
@@ -232,7 +228,6 @@ class GraphqlConvert:
 
             attrs[attribute.name] = value
 
-        print(attrs)
         return model(**attrs)
 
     @classmethod

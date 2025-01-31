@@ -5,45 +5,18 @@ from unittest.mock import Mock, patch
 from sqlmodel import select
 
 from vita.src.model.convert import GraphqlConvert
-from vita.src.model.graphql_input import AccountGraphqlInput, SubAccountGraphqlInput
+from vita.src.model.graphql_input import AccountGraphqlInput
 from vita.src.model.graphql_type import AccountGraphqlType, VitaErrorGraphqlType
 from vita.src.model.model import (
     Account,
     BsPlEnum,
     CreditDebitEnum,
     DeptEnum,
-    SubAccount,
 )
 from vita.src.service.create_account_service import CreateAccountService
 from vita.src.util.constant import SYSTEM_USER
 from vita.src.util.dt import VitaDatetime
 from vita.src.util.sql_model import SQLSession
-
-
-def test_a(session: SQLSession):
-    input = AccountGraphqlInput(
-        name="0" * 101,
-        description="des",
-        dept=DeptEnum.CURRENT_ASSETS,
-        bs_pl=BsPlEnum.BS,
-        credit_debit=CreditDebitEnum.DEBIT,
-    )
-    sub_input = SubAccountGraphqlInput(
-        name="name",
-        description="desc",
-    )
-
-    a: type[Account] = GraphqlConvert.get_model(input=input)
-    print(a.__dir__(a()))
-    b = a().get_columns_and_relationships()
-    print(b)
-
-    d: type[SubAccount] = GraphqlConvert.get_model(input=sub_input)
-    e = d().get_columns_and_relationships()
-    print(e)
-
-    model = GraphqlConvert.input_to_model(Account, input)
-    assert model.name == "0" * 101
 
 
 def test_create_account_service_case01(session: SQLSession):
@@ -187,9 +160,6 @@ def test_create_account_service_case05(now: Mock, session: SQLSession):
     service = CreateAccountService(session)
     result: AccountGraphqlType = service.execute(input)
     account: Account = GraphqlConvert.type_to_model(Account, result)
-
-    print(result)
-    print(account)
 
     assert account.id
     assert account.name == "name"
